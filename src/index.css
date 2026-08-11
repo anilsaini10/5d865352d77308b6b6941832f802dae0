@@ -1,0 +1,94 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+* {
+  -webkit-tap-highlight-color: transparent;
+}
+
+html, body, #root {
+  height: 100%;
+}
+
+body {
+  background-color: #FAF8F3;
+  color: #22281F;
+  font-family: 'Inter', sans-serif;
+  background-image:
+    radial-gradient(circle at 1px 1px, rgba(31,58,52,0.06) 1px, transparent 0);
+  background-size: 22px 22px;
+}
+
+:focus-visible {
+  outline: 2px solid #1F3A34;
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+::selection {
+  background: #F2C94C;
+  color: #1F3A34;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+  }
+}
+
+/* Chalk underline squiggle used for active nav state */
+.chalk-underline {
+  position: relative;
+}
+.chalk-underline::after {
+  content: '';
+  position: absolute;
+  left: 0.9rem;
+  right: 0.9rem;
+  bottom: 0.35rem;
+  height: 6px;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 10' preserveAspectRatio='none'%3E%3Cpath d='M0 6 Q 10 0, 20 6 T 40 6 T 60 6 T 80 6 T 100 6' stroke='%23F2C94C' stroke-width='3' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+  background-repeat: repeat-x;
+  background-size: 26px 8px;
+  opacity: 0.9;
+}
+
+/* Scrollbar */
+::-webkit-scrollbar { width: 10px; height: 10px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: #D9D2C0; border-radius: 999px; }
+::-webkit-scrollbar-thumb:hover { background: #C9C0A8; }
+
+/* Perforated card edge (report-card signature) */
+.stub-edge {
+  position: relative;
+}
+.stub-edge::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  width: 1px;
+  background-image: linear-gradient(#D9D2C0 60%, transparent 0%);
+  background-size: 1px 8px;
+  background-repeat: repeat-y;
+}
+
+@keyframes rise {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.animate-rise {
+  animation: rise 0.35s ease-out both;
+}
+
+@keyframes toast-in {
+  from { opacity: 0; transform: translateY(8px) scale(0.98); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+.animate-toast {
+  animation: toast-in 0.25s ease-out both;
+}
