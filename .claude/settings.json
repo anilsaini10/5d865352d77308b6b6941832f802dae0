@@ -1,0 +1,13 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm install *)",
+      "Bash(npm run *)",
+      "Bash(timeout 8 npm run dev -- --port 5183)",
+      "Bash(curl -s -o /dev/null -w \"backend reachable, http_code=%{http_code}\\\\n\" http://localhost:5000/api/auth/login -X POST -H \"Content-Type: application/json\" -d '{\"identifier\":\"test\",\"password\":\"test\",\"role\":\"SUPER_ADMIN\"}')",
+      "Bash(lsof -iTCP -sTCP:LISTEN -P)",
+      "Bash(curl -s -i -X OPTIONS http://localhost:5000/api/auth/login -H 'Origin: http://localhost:5173' -H 'Access-Control-Request-Method: POST' -H 'Access-Control-Request-Headers: Content-Type')",
+      "Bash(curl -s -i -X POST http://localhost:5000/api/auth/login -H 'Origin: http://localhost:5173' -H 'Content-Type: application/json' -d '{\"identifier\":\"test\",\"password\":\"test\",\"role\":\"SUPER_ADMIN\"}')"
+    ]
+  }
+}

@@ -1,5 +1,5 @@
-import { useEffect } from 'react'
-import { X } from 'lucide-react'
+import { useEffect, useState } from 'react'
+import { ChevronDown, X } from 'lucide-react'
 
 export function Badge({ tone = 'neutral', children }) {
   const tones = {
@@ -101,6 +101,30 @@ export function EmptyState({ icon: Icon, title, message, action }) {
       <h3 className="font-display text-lg font-semibold text-ink">{title}</h3>
       <p className="text-sm text-ink/55 mt-1.5 max-w-sm">{message}</p>
       {action && <div className="mt-5">{action}</div>}
+    </div>
+  )
+}
+
+export function Section({ title, description, defaultOpen = true, children }) {
+  const [open, setOpen] = useState(defaultOpen)
+
+  return (
+    <div className="bg-white border border-line rounded-2xl shadow-card mb-4">
+      <button
+        type="button"
+        onClick={() => setOpen((o) => !o)}
+        className="w-full flex items-center justify-between px-5 py-4 text-left"
+        aria-expanded={open}
+      >
+        <div>
+          <h3 className="font-display font-semibold text-ink">{title}</h3>
+          {description && <p className="text-xs text-ink/50 mt-0.5">{description}</p>}
+        </div>
+        <ChevronDown size={18} className={`text-ink/40 transition-transform shrink-0 ${open ? 'rotate-180' : ''}`} />
+      </button>
+      {open && (
+        <div className="px-5 pb-5 pt-1 border-t border-line grid grid-cols-1 sm:grid-cols-2 gap-4">{children}</div>
+      )}
     </div>
   )
 }

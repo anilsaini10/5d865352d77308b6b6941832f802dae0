@@ -1,15 +1,18 @@
+import { useState } from 'react'
 import { NavLink } from 'react-router-dom'
-import { LayoutGrid, School, Users, LogOut, GraduationCap, X } from 'lucide-react'
-import { useAuth } from '../context/AuthContext.jsx'
+import { LayoutDashboard, School, Users, LogOut, KeyRound, GraduationCap, X } from 'lucide-react'
+import { useAuth } from '../features/auth/AuthContext.jsx'
+import ChangePasswordModal from '../features/auth/components/ChangePasswordModal.jsx'
 
 const NAV = [
-  { to: '/', label: 'Dashboard', icon: LayoutGrid, end: true },
+  { to: '/', label: 'Dashboard', icon: LayoutDashboard, end: true },
   { to: '/schools', label: 'Schools', icon: School },
   { to: '/admins', label: 'Admins', icon: Users },
 ]
 
 export default function Sidebar({ open, onClose }) {
   const { logout, user } = useAuth()
+  const [changePasswordOpen, setChangePasswordOpen] = useState(false)
 
   return (
     <>
@@ -67,18 +70,27 @@ export default function Sidebar({ open, onClose }) {
             </div>
             <div className="min-w-0">
               <p className="text-sm font-semibold truncate">{user?.name}</p>
-              <p className="text-xs text-paper/50 truncate">{user?.role}</p>
+              <p className="text-xs text-paper/50 truncate">Super Admin</p>
             </div>
           </div>
           <button
+            onClick={() => setChangePasswordOpen(true)}
+            className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-sm font-medium text-paper/65 hover:text-paper hover:bg-paper/5 transition-colors"
+          >
+            <KeyRound size={17} />
+            Change password
+          </button>
+          <button
             onClick={logout}
-            className="w-full flex items-center gap-2.5 px-3 py-2 mt-1 rounded-xl text-sm font-medium text-paper/65 hover:text-paper hover:bg-paper/5 transition-colors"
+            className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-sm font-medium text-paper/65 hover:text-paper hover:bg-paper/5 transition-colors"
           >
             <LogOut size={17} />
             Log out
           </button>
         </div>
       </aside>
+
+      <ChangePasswordModal open={changePasswordOpen} onClose={() => setChangePasswordOpen(false)} />
     </>
   )
 }

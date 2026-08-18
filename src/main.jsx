@@ -3,8 +3,7 @@ import { createRoot } from 'react-dom/client'
 import { BrowserRouter } from 'react-router-dom'
 import './index.css'
 import App from './App.jsx'
-import { AuthProvider } from './context/AuthContext.jsx'
-import { DataProvider } from './context/DataContext.jsx'
+import { AuthProvider } from './features/auth/AuthContext.jsx'
 import { ToastProvider } from './context/ToastContext.jsx'
 
 createRoot(document.getElementById('root')).render(
@@ -12,9 +11,7 @@ createRoot(document.getElementById('root')).render(
     <BrowserRouter>
       <ToastProvider>
         <AuthProvider>
-          <DataProvider>
-            <App />
-          </DataProvider>
+          <App />
         </AuthProvider>
       </ToastProvider>
     </BrowserRouter>

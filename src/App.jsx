@@ -1,26 +1,58 @@
-import { Navigate, Route, Routes, useLocation } from 'react-router-dom'
-import { useAuth } from './context/AuthContext.jsx'
-import Login from './pages/Login.jsx'
-import Dashboard from './pages/Dashboard.jsx'
-import Schools from './pages/Schools.jsx'
-import Admins from './pages/Admins.jsx'
-
-function ProtectedRoute({ children }) {
-  const { user, ready } = useAuth()
-  const location = useLocation()
-
-  if (!ready) return null
-  if (!user) return <Navigate to="/login" state={{ from: location.pathname }} replace />
-  return children
-}
+import { Navigate, Route, Routes } from 'react-router-dom'
+import ProtectedRoute from './routes/ProtectedRoute.jsx'
+import LoginPage from './features/auth/LoginPage.jsx'
+import ForgotPasswordPage from './features/auth/ForgotPasswordPage.jsx'
+import DashboardPage from './features/dashboard/DashboardPage.jsx'
+import SchoolsListPage from './features/schools/SchoolsListPage.jsx'
+import CreateSchoolPage from './features/schools/CreateSchoolPage.jsx'
+import SchoolDetailPage from './features/schools/SchoolDetailPage.jsx'
+import AdminsListPage from './features/admins/AdminsListPage.jsx'
 
 export default function App() {
   return (
     <Routes>
-      <Route path="/login" element={<Login />} />
-      <Route path="/" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
-      <Route path="/schools" element={<ProtectedRoute><Schools /></ProtectedRoute>} />
-      <Route path="/admins" element={<ProtectedRoute><Admins /></ProtectedRoute>} />
+      <Route path="/login" element={<LoginPage />} />
+      <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+      <Route
+        path="/"
+        element={
+          <ProtectedRoute>
+            <DashboardPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/schools"
+        element={
+          <ProtectedRoute>
+            <SchoolsListPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/schools/new"
+        element={
+          <ProtectedRoute>
+            <CreateSchoolPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/schools/:schoolId"
+        element={
+          <ProtectedRoute>
+            <SchoolDetailPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/admins"
+        element={
+          <ProtectedRoute>
+            <AdminsListPage />
+          </ProtectedRoute>
+        }
+      />
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   )

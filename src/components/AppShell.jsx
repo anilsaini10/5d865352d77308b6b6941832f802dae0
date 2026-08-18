@@ -1,8 +1,8 @@
 import { useState } from 'react'
-import { Menu } from 'lucide-react'
+import { ArrowLeft, Menu } from 'lucide-react'
 import Sidebar from './Sidebar.jsx'
 
-export default function AppShell({ title, subtitle, actions, children }) {
+export default function AppShell({ title, subtitle, actions, onBack, children }) {
   const [sidebarOpen, setSidebarOpen] = useState(false)
 
   return (
@@ -20,6 +20,15 @@ export default function AppShell({ title, subtitle, actions, children }) {
               >
                 <Menu size={20} />
               </button>
+              {onBack && (
+                <button
+                  onClick={onBack}
+                  className="p-2 -ml-2 rounded-lg text-ink/60 hover:text-ink hover:bg-line/50 transition-colors shrink-0"
+                  aria-label="Go back"
+                >
+                  <ArrowLeft size={20} />
+                </button>
+              )}
               <div className="min-w-0">
                 <h1 className="font-display text-xl sm:text-2xl font-semibold text-ink truncate">{title}</h1>
                 {subtitle && <p className="text-sm text-ink/55 mt-0.5 truncate">{subtitle}</p>}
