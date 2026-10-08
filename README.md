@@ -13,10 +13,15 @@ routes mount hote hain (`src/App.jsx` → `src/routes/*Routes.jsx`).
 ## Setup
 
 ```bash
-cp .env.example .env   # VITE_API_BASE_URL set karein
 npm install
-npm run dev
+npm run dev        # local backend   (.env.development → http://localhost:5000/api)
+npm run dev:live   # Render backend  (.env.production)
+npm run build      # production build → Render backend
+npm run build:local  # build jo local backend se baat kare
 ```
+
+Backend URL sirf `.env.development` / `.env.production` mein hai. Apne liye
+alag URL chahiye to `.env.development.local` banayein (git mein nahi jata).
 
 ## Theme (colors, fonts, text sizes, radius)
 
