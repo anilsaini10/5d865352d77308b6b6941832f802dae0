@@ -1,31 +1,40 @@
+import { theme } from './src/theme/theme.js'
+import { radiusVar } from './src/theme/applyTheme.js'
+
+// Every value below points at a CSS variable written by applyTheme() from
+// src/theme/theme.js — edit colors/fonts/sizes there, not here.
+const color = (name) => `rgb(var(--c-${name}) / <alpha-value>)`
+
 /** @type {import('tailwindcss').Config} */
 export default {
   content: ['./index.html', './src/**/*.{js,jsx}'],
   theme: {
     extend: {
       colors: {
-        paper: '#FAF8F3',
+        paper: color('paper'),
+        surface: color('surface'),
+        ink: color('ink'),
+        line: { DEFAULT: color('line'), strong: color('line-strong') },
         board: {
-          DEFAULT: '#1F3A34',
-          light: '#2C4F47',
-          dark: '#152A25',
+          DEFAULT: color('board'),
+          light: color('board-light'),
+          dark: color('board-dark'),
         },
-        chalk: '#F2C94C',
-        coral: '#E2725B',
-        ink: '#22281F',
-        line: '#E4DFD3',
+        'on-board': color('on-board'),
+        chalk: { DEFAULT: color('chalk'), ink: color('chalk-ink') },
+        coral: color('coral'),
+        success: color('success'),
+        warning: color('warning'),
+        info: color('info'),
       },
-      fontFamily: {
-        display: ['"Fraunces"', 'serif'],
-        body: ['"Inter"', 'sans-serif'],
-        mono: ['"JetBrains Mono"', 'monospace'],
-      },
+      fontFamily: Object.fromEntries(Object.keys(theme.fonts).map((k) => [k, `var(--font-${k})`])),
+      fontSize: Object.fromEntries(
+        Object.keys(theme.fontSizes).map((k) => [k, [`var(--fs-${k})`, { lineHeight: `var(--lh-${k})` }]])
+      ),
+      borderRadius: Object.fromEntries(Object.keys(theme.radius).map((k) => [k, `var(${radiusVar(k)})`])),
       boxShadow: {
-        card: '0 1px 2px rgba(31,58,52,0.06), 0 1px 0 rgba(31,58,52,0.04)',
-        pop: '0 12px 32px rgba(31,58,52,0.16)',
-      },
-      backgroundImage: {
-        chalkline: "linear-gradient(90deg, transparent, rgba(242,201,76,0.5), transparent)",
+        card: '0 1px 2px rgb(var(--c-board) / 0.06), 0 1px 0 rgb(var(--c-board) / 0.04)',
+        pop: '0 12px 32px rgb(var(--c-board) / 0.16)',
       },
     },
   },

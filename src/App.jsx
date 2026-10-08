@@ -1,12 +1,26 @@
-import { Navigate, Route, Routes } from 'react-router-dom'
+import { lazy, Suspense } from 'react'
+import { Route, Routes } from 'react-router-dom'
 import ProtectedRoute from './routes/ProtectedRoute.jsx'
 import LoginPage from './features/auth/LoginPage.jsx'
 import ForgotPasswordPage from './features/auth/ForgotPasswordPage.jsx'
-import DashboardPage from './features/dashboard/DashboardPage.jsx'
-import SchoolsListPage from './features/schools/SchoolsListPage.jsx'
-import CreateSchoolPage from './features/schools/CreateSchoolPage.jsx'
-import SchoolDetailPage from './features/schools/SchoolDetailPage.jsx'
-import AdminsListPage from './features/admins/AdminsListPage.jsx'
+import { useAuth } from './features/auth/AuthContext.jsx'
+import { ROLES } from './features/auth/roles.js'
+import { PageLoader } from './components/ui.jsx'
+
+// Each role's pages ship as their own chunk — an admin never downloads the super admin console and vice versa.
+const SuperAdminRoutes = lazy(() => import('./routes/SuperAdminRoutes.jsx'))
+const AdminRoutes = lazy(() => import('./routes/AdminRoutes.jsx'))
+
+// Same URL space for both roles — the signed-in user's role picks which
+// route tree (and sidebar) is mounted.
+function RoleRoutes() {
+  const { user } = useAuth()
+  return (
+    <Suspense fallback={<PageLoader className="min-h-screen" />}>
+      {user?.role === ROLES.ADMIN ? <AdminRoutes /> : <SuperAdminRoutes />}
+    </Suspense>
+  )
+}
 
 export default function App() {
   return (
@@ -14,46 +28,13 @@ export default function App() {
       <Route path="/login" element={<LoginPage />} />
       <Route path="/forgot-password" element={<ForgotPasswordPage />} />
       <Route
-        path="/"
+        path="/*"
         element={
           <ProtectedRoute>
-            <DashboardPage />
+            <RoleRoutes />
           </ProtectedRoute>
         }
       />
-      <Route
-        path="/schools"
-        element={
-          <ProtectedRoute>
-            <SchoolsListPage />
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/schools/new"
-        element={
-          <ProtectedRoute>
-            <CreateSchoolPage />
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/schools/:schoolId"
-        element={
-          <ProtectedRoute>
-            <SchoolDetailPage />
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/admins"
-        element={
-          <ProtectedRoute>
-            <AdminsListPage />
-          </ProtectedRoute>
-        }
-      />
-      <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   )
 }

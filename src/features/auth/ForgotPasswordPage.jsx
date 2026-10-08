@@ -93,7 +93,7 @@ export default function ForgotPasswordPage() {
         </div>
 
         {step === 'email' ? (
-          <form onSubmit={submitEmail} className="bg-white border border-line rounded-2xl shadow-card p-6 space-y-4">
+          <form onSubmit={submitEmail} className="bg-surface border border-line rounded-2xl shadow-card p-6 space-y-4">
             <Field label="Email" required error={errors.email}>
               <input
                 type="email"
@@ -121,7 +121,7 @@ export default function ForgotPasswordPage() {
             </button>
           </form>
         ) : (
-          <form onSubmit={submitReset} className="bg-white border border-line rounded-2xl shadow-card p-6 space-y-4">
+          <form onSubmit={submitReset} className="bg-surface border border-line rounded-2xl shadow-card p-6 space-y-4">
             {info && (
               <p className="text-sm text-board font-medium bg-board/8 border border-board/20 rounded-lg px-3 py-2">
                 {info}

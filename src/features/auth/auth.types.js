@@ -1,10 +1,10 @@
 /**
- * @typedef {Object} SuperAdminUser
+ * @typedef {Object} PanelUser
  * @property {string} id
  * @property {string} name
  * @property {string} email
  * @property {string|null} phone
- * @property {'SUPER_ADMIN'} role
+ * @property {'SUPER_ADMIN'|'ADMIN'} role
  * @property {string|null} schoolId
  * @property {string|null} schoolName
  */
@@ -18,7 +18,7 @@
 
 /**
  * @typedef {Object} LoginResult
- * @property {SuperAdminUser} user
+ * @property {PanelUser} user
  * @property {AuthTokens} tokens
  */
 

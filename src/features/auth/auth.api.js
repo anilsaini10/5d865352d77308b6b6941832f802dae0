@@ -2,9 +2,9 @@ import { httpClient } from '../../api/httpClient.js'
 
 export const authApi = {
   /** @returns {Promise<import('./auth.types.js').LoginResult>} */
-  login(identifier, password) {
+  login(identifier, password, role) {
     return httpClient
-      .post('/auth/login', { identifier, password, role: 'SUPER_ADMIN' })
+      .post('/auth/login', { identifier, password, role })
       .then((res) => res.data.data)
   },
 

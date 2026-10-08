@@ -12,7 +12,7 @@ const ICONS = {
 const STYLES = {
   success: 'bg-board text-paper border-board-dark',
   error: 'bg-coral text-white border-coral',
-  info: 'bg-white text-ink border-line',
+  info: 'bg-surface text-ink border-line',
 }
 
 export function ToastProvider({ children }) {

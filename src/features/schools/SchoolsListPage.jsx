@@ -75,11 +75,11 @@ export default function SchoolsListPage() {
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           placeholder="Search by name or city..."
-          className="w-full rounded-lg border border-line bg-white pl-10 pr-3.5 py-2.5 text-sm text-ink placeholder:text-ink/35 focus:border-board focus:ring-2 focus:ring-board/15 outline-none transition-shadow"
+          className="w-full rounded-lg border border-line bg-surface pl-10 pr-3.5 py-2.5 text-sm text-ink placeholder:text-ink/35 focus:border-board focus:ring-2 focus:ring-board/15 outline-none transition-shadow"
         />
       </div>
 
-      <div className="bg-white border border-line rounded-2xl shadow-card overflow-hidden">
+      <div className="bg-surface border border-line rounded-2xl shadow-card overflow-hidden">
         {loading ? (
           <div className="flex items-center justify-center py-16 text-ink/40">
             <Loader2 size={22} className="animate-spin" />

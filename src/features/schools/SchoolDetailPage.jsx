@@ -127,7 +127,7 @@ export default function SchoolDetailPage() {
   if (notFound) {
     return (
       <AppShell title="School not found" onBack={() => navigate('/schools')}>
-        <div className="bg-white border border-line rounded-2xl shadow-card">
+        <div className="bg-surface border border-line rounded-2xl shadow-card">
           <EmptyState
             title="This school doesn't exist"
             message="It may have been removed, or the link is incorrect."
@@ -200,7 +200,7 @@ export default function SchoolDetailPage() {
         </button>
       </div>
 
-      <div className="bg-white border border-line rounded-2xl shadow-card overflow-hidden">
+      <div className="bg-surface border border-line rounded-2xl shadow-card overflow-hidden">
         <AdminsTable
           admins={admins}
           onEdit={(admin) => setAdminModal({ admin })}

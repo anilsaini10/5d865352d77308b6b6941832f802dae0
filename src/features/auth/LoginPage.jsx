@@ -5,12 +5,25 @@ import { useAuth } from './AuthContext.jsx'
 import { validateLoginForm } from './auth.validation.js'
 import { getErrorMessage } from '../../api/httpClient.js'
 import { inputClass, Field } from '../../components/ui.jsx'
+import { PANEL_ROLES, ROLE_LABELS, ROLES } from './roles.js'
+
+const LAST_ROLE_KEY = 'panel_last_role'
+
+function readLastRole() {
+  try {
+    const saved = localStorage.getItem(LAST_ROLE_KEY)
+    return PANEL_ROLES.includes(saved) ? saved : ROLES.ADMIN
+  } catch {
+    return ROLES.ADMIN
+  }
+}
 
 export default function LoginPage() {
   const { login, user, ready } = useAuth()
   const navigate = useNavigate()
   const location = useLocation()
 
+  const [role, setRole] = useState(readLastRole)
   const [identifier, setIdentifier] = useState('')
   const [password, setPassword] = useState('')
   const [showPassword, setShowPassword] = useState(false)
@@ -34,7 +47,12 @@ export default function LoginPage() {
 
     setSubmitting(true)
     try {
-      await login(identifier.trim(), password)
+      await login(identifier.trim(), password, role)
+      try {
+        localStorage.setItem(LAST_ROLE_KEY, role)
+      } catch {
+        // storage unavailable — the role just won't be remembered
+      }
       navigate(location.state?.from || '/', { replace: true })
     } catch (err) {
       setServerError(getErrorMessage(err, 'Invalid credentials.'))
@@ -51,13 +69,30 @@ export default function LoginPage() {
             <GraduationCap size={24} className="text-chalk" strokeWidth={2.3} />
           </div>
           <h1 className="font-display text-2xl font-semibold text-ink">Vidyalaya Admin</h1>
-          <p className="text-sm text-ink/55 mt-1.5">Sign in to the super admin console</p>
+          <p className="text-sm text-ink/55 mt-1.5">Sign in to the {ROLE_LABELS[role].toLowerCase()} console</p>
         </div>
 
         <form
           onSubmit={handleSubmit}
-          className="bg-white border border-line rounded-2xl shadow-card p-6 space-y-4"
+          className="bg-surface border border-line rounded-2xl shadow-card p-6 space-y-4"
         >
+          <div role="radiogroup" aria-label="Sign in as" className="grid grid-cols-2 gap-1 p-1 bg-paper border border-line rounded-xl">
+            {PANEL_ROLES.map((r) => (
+              <button
+                key={r}
+                type="button"
+                role="radio"
+                aria-checked={role === r}
+                onClick={() => setRole(r)}
+                className={`py-2 rounded-lg text-sm font-semibold transition-colors ${
+                  role === r ? 'bg-board text-on-board shadow-card' : 'text-ink/60 hover:text-ink'
+                }`}
+              >
+                {ROLE_LABELS[r]}
+              </button>
+            ))}
+          </div>
+
           {infoMessage && (
             <p className="text-sm text-board font-medium bg-board/8 border border-board/20 rounded-lg px-3 py-2">
               {infoMessage}

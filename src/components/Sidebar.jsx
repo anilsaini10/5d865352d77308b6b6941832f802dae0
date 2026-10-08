@@ -1,18 +1,17 @@
 import { useState } from 'react'
 import { NavLink } from 'react-router-dom'
-import { LayoutDashboard, School, Users, LogOut, KeyRound, GraduationCap, X } from 'lucide-react'
+import { LogOut, KeyRound, GraduationCap, X } from 'lucide-react'
 import { useAuth } from '../features/auth/AuthContext.jsx'
 import ChangePasswordModal from '../features/auth/components/ChangePasswordModal.jsx'
-
-const NAV = [
-  { to: '/', label: 'Dashboard', icon: LayoutDashboard, end: true },
-  { to: '/schools', label: 'Schools', icon: School },
-  { to: '/admins', label: 'Admins', icon: Users },
-]
+import { ROLE_LABELS, ROLES } from '../features/auth/roles.js'
+import { NAV_BY_ROLE } from './navigation.js'
 
 export default function Sidebar({ open, onClose }) {
   const { logout, user } = useAuth()
   const [changePasswordOpen, setChangePasswordOpen] = useState(false)
+  const role = user?.role ?? ROLES.SUPER_ADMIN
+  const navGroups = NAV_BY_ROLE[role] ?? []
+  const roleLabel = ROLE_LABELS[role]
 
   return (
     <>
@@ -24,7 +23,7 @@ export default function Sidebar({ open, onClose }) {
         />
       )}
       <aside
-        className={`fixed lg:sticky top-0 h-screen w-72 bg-board text-paper flex flex-col z-40 transition-transform duration-300 shrink-0
+        className={`fixed lg:sticky top-0 h-screen w-72 bg-board text-on-board flex flex-col z-40 transition-transform duration-300 shrink-0
           ${open ? 'translate-x-0' : '-translate-x-full'} lg:translate-x-0`}
       >
         <div className="flex items-center justify-between px-6 pt-6 pb-5">
@@ -34,55 +33,64 @@ export default function Sidebar({ open, onClose }) {
             </div>
             <div>
               <p className="font-display font-semibold text-lg leading-tight">Vidyalaya</p>
-              <p className="text-[11px] uppercase tracking-wider text-paper/50 font-medium">Super Admin</p>
+              <p className="text-[11px] uppercase tracking-wider text-on-board/50 font-medium truncate max-w-[10rem]">
+                {role === ROLES.ADMIN && user?.schoolName ? user.schoolName : roleLabel}
+              </p>
             </div>
           </div>
-          <button onClick={onClose} className="lg:hidden text-paper/60 hover:text-paper p-1" aria-label="Close menu">
+          <button onClick={onClose} className="lg:hidden text-on-board/60 hover:text-on-board p-1" aria-label="Close menu">
             <X size={20} />
           </button>
         </div>
 
-        <nav className="flex-1 px-4 space-y-1 mt-2">
-          {NAV.map(({ to, label, icon: Icon, end }) => (
-            <NavLink
-              key={to}
-              to={to}
-              end={end}
-              onClick={onClose}
-              className={({ isActive }) =>
-                `flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm font-medium transition-colors relative ${
-                  isActive
-                    ? 'bg-paper/10 text-paper chalk-underline'
-                    : 'text-paper/65 hover:text-paper hover:bg-paper/5'
-                }`
-              }
-            >
-              <Icon size={18} strokeWidth={2.1} />
-              {label}
-            </NavLink>
+        <nav className="flex-1 min-h-0 overflow-y-auto px-4 mt-2 pb-3 space-y-4">
+          {navGroups.map((group, i) => (
+            <div key={group.title ?? i} className="space-y-1">
+              {group.title && (
+                <p className="px-3.5 pb-1 text-[11px] uppercase tracking-wider text-on-board/40 font-semibold">{group.title}</p>
+              )}
+              {group.items.map(({ to, label, icon: Icon, end }) => (
+                <NavLink
+                  key={to}
+                  to={to}
+                  end={end}
+                  onClick={onClose}
+                  className={({ isActive }) =>
+                    `flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm font-medium transition-colors ${
+                      isActive
+                        ? 'bg-on-board/10 text-on-board'
+                        : 'text-on-board/65 hover:text-on-board hover:bg-on-board/5'
+                    }`
+                  }
+                >
+                  <Icon size={18} strokeWidth={2.1} />
+                  {label}
+                </NavLink>
+              ))}
+            </div>
           ))}
         </nav>
 
-        <div className="px-4 pb-5 pt-3 border-t border-paper/10 mx-4">
+        <div className="px-4 pb-5 pt-3 border-t border-on-board/10 mx-4">
           <div className="flex items-center gap-3 px-1 py-2">
             <div className="w-9 h-9 rounded-full bg-chalk text-board font-display font-semibold flex items-center justify-center text-sm shrink-0">
               {user?.name?.[0] ?? 'S'}
             </div>
             <div className="min-w-0">
               <p className="text-sm font-semibold truncate">{user?.name}</p>
-              <p className="text-xs text-paper/50 truncate">Super Admin</p>
+              <p className="text-xs text-on-board/50 truncate">{roleLabel}</p>
             </div>
           </div>
           <button
             onClick={() => setChangePasswordOpen(true)}
-            className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-sm font-medium text-paper/65 hover:text-paper hover:bg-paper/5 transition-colors"
+            className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-sm font-medium text-on-board/65 hover:text-on-board hover:bg-on-board/5 transition-colors"
           >
             <KeyRound size={17} />
             Change password
           </button>
           <button
             onClick={logout}
-            className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-sm font-medium text-paper/65 hover:text-paper hover:bg-paper/5 transition-colors"
+            className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-sm font-medium text-on-board/65 hover:text-on-board hover:bg-on-board/5 transition-colors"
           >
             <LogOut size={17} />
             Log out

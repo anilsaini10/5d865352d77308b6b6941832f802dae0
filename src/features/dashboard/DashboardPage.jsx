@@ -12,7 +12,7 @@ function StatTile({ icon: Icon, label, value, accent }) {
   }
 
   return (
-    <div className="bg-white border border-line rounded-2xl shadow-card p-5 flex items-center gap-4">
+    <div className="bg-surface border border-line rounded-2xl shadow-card p-5 flex items-center gap-4">
       <div className={`w-11 h-11 rounded-xl flex items-center justify-center shrink-0 ${accents[accent] || accents.board}`}>
         <Icon size={20} />
       </div>

@@ -23,8 +23,8 @@ export function AuthProvider({ children }) {
     registerSessionExpiredHandler(clearSession)
   }, [clearSession])
 
-  const login = useCallback(async (identifier, password) => {
-    const { user: loggedInUser, tokens } = await authApi.login(identifier, password)
+  const login = useCallback(async (identifier, password, role) => {
+    const { user: loggedInUser, tokens } = await authApi.login(identifier, password, role)
     tokenStorage.setTokens(tokens)
     tokenStorage.setUser(loggedInUser)
     setUser(loggedInUser)

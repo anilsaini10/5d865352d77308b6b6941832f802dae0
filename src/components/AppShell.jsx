@@ -1,9 +1,14 @@
 import { useState } from 'react'
 import { ArrowLeft, Menu } from 'lucide-react'
 import Sidebar from './Sidebar.jsx'
+import { useAuth } from '../features/auth/AuthContext.jsx'
+import { ROLES } from '../features/auth/roles.js'
+import NotificationBell from '../features/admin/notifications/NotificationBell.jsx'
 
 export default function AppShell({ title, subtitle, actions, onBack, children }) {
   const [sidebarOpen, setSidebarOpen] = useState(false)
+  const { user } = useAuth()
+  const showBell = user?.role === ROLES.ADMIN
 
   return (
     <div className="min-h-screen flex">
@@ -34,7 +39,12 @@ export default function AppShell({ title, subtitle, actions, onBack, children })
                 {subtitle && <p className="text-sm text-ink/55 mt-0.5 truncate">{subtitle}</p>}
               </div>
             </div>
-            {actions && <div className="flex items-center gap-2.5 shrink-0">{actions}</div>}
+            {(actions || showBell) && (
+              <div className="flex items-center gap-2.5 shrink-0">
+                {actions}
+                {showBell && <NotificationBell />}
+              </div>
+            )}
           </div>
         </header>
 
