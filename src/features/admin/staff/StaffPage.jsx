@@ -36,7 +36,7 @@ export default function StaffPage() {
 
   const [search, setSearch] = useState('')
   const [designation, setDesignation] = useState('')
-  const [status, setStatus] = useState(RECORD_STATUS.ACTIVE)
+  const [status, setStatus] = useState(RECORD_STATUS.ALL)
   const [page, setPage] = useState(1)
   const debouncedSearch = useDebouncedValue(search.trim())
   const debouncedDesignation = useDebouncedValue(designation.trim())

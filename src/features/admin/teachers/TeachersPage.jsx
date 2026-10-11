@@ -30,7 +30,7 @@ export default function TeachersPage() {
   const [search, setSearch] = useState('')
   const [subject, setSubject] = useState('')
   const [classId, setClassId] = useState('')
-  const [status, setStatus] = useState(RECORD_STATUS.ACTIVE)
+  const [status, setStatus] = useState(RECORD_STATUS.ALL)
   const [page, setPage] = useState(1)
   const debouncedSearch = useDebouncedValue(search.trim())
   const debouncedSubject = useDebouncedValue(subject.trim())
@@ -49,7 +49,7 @@ export default function TeachersPage() {
     { errorMessage: 'Could not load teachers.' }
   )
   const teachers = data?.items ?? []
-  const hasFilters = !!(debouncedSearch || debouncedSubject || classId || status !== RECORD_STATUS.ACTIVE)
+  const hasFilters = !!(debouncedSearch || debouncedSubject || classId || status !== RECORD_STATUS.ALL)
 
   const handleSaved = (result, { isEdit }) => {
     if (isEdit) notify(`${result.teacher?.name ?? 'Teacher'} was updated.`, 'success')

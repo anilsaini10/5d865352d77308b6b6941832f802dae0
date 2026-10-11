@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Plus, X } from 'lucide-react'
 import { Modal, Field, inputClass, selectClass, Alert, Button, FormActions, IconButton } from '../../../../components/ui.jsx'
-import { getErrorMessage } from '../../../../api/httpClient.js'
+import { getErrorCode, getErrorMessage } from '../../../../api/httpClient.js'
 import { toDateInput } from '../../../../utils/format.js'
 import { examsApi } from '../exams.api.js'
 import { validateExamForm } from '../exams.validation.js'
@@ -86,7 +86,8 @@ export default function ExamFormModal({ open, onClose, exam, classes, onSaved })
       onSaved(saved, { isEdit })
       onClose()
     } catch (err) {
-      setServerError(getErrorMessage(err, isEdit ? 'Could not update the exam.' : 'Could not create the exam.'))
+      const message = getErrorMessage(err, isEdit ? 'Could not update the exam.' : 'Could not create the exam.')
+      setServerError(getErrorCode(err) === 'EXAM_SCHEDULE_OUTSIDE_RANGE' ? `${message} Move those papers on the Date Sheet tab first.` : message)
     } finally {
       setSubmitting(false)
     }

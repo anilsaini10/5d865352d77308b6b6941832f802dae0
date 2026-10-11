@@ -287,10 +287,11 @@ export function Tabs({ options, value, onChange, className = '' }) {
 
 export const RECORD_STATUS = { ACTIVE: 'ACTIVE', INACTIVE: 'INACTIVE', ALL: 'ALL' }
 
+// "All" always comes first in filter tabs across the app.
 const STATUS_FILTER_OPTIONS = [
+  { value: RECORD_STATUS.ALL, label: 'All' },
   { value: RECORD_STATUS.ACTIVE, label: 'Active' },
   { value: RECORD_STATUS.INACTIVE, label: 'Deleted' },
-  { value: RECORD_STATUS.ALL, label: 'All' },
 ]
 
 /** The shared Active / Deleted / All filter used by students, teachers and staff lists. */

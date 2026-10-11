@@ -1,4 +1,4 @@
-# Vidyalaya Admin — School Management Web Panel
+# NOUGHT ONE — School Management Web Panel
 
 React 19 + Vite 6 + Tailwind CSS 3 + React Router 7. Ek hi panel do roles ke liye:
 

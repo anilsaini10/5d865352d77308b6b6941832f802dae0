@@ -1,8 +1,8 @@
 import { useState } from 'react'
-import { useNavigate, useParams } from 'react-router-dom'
-import { CalendarDays, ClipboardCheck, Layers, Pencil, Plus, Trash2, UserRound, X } from 'lucide-react'
+import { useNavigate, useParams, useSearchParams } from 'react-router-dom'
+import { CalendarDays, Layers, Pencil, Plus, Trash2, UserRound, X } from 'lucide-react'
 import AppShell from '../../../components/AppShell.jsx'
-import { Alert, AsyncContent, Button, Card, ConfirmDialog, EmptyState, IconButton, PageLoader, Table, THead, Th, Tr, Td } from '../../../components/ui.jsx'
+import { Alert, AsyncContent, Button, Card, ConfirmDialog, EmptyState, IconButton, PageLoader, Tabs, Table, THead, Th, Tr, Td } from '../../../components/ui.jsx'
 import { useFetch } from '../../../hooks/useFetch.js'
 import { useToast } from '../../../context/ToastContext.jsx'
 import { getErrorCode, getErrorMessage } from '../../../api/httpClient.js'
@@ -14,6 +14,10 @@ import AddExamClassModal from './components/AddExamClassModal.jsx'
 import { ExamDeleteMessage } from './components/ExamDeleteMessage.jsx'
 import { examDates } from './components/examFormat.js'
 import GradingProgress from './components/GradingProgress.jsx'
+import DateSheetTab from './components/DateSheetTab.jsx'
+import MarksTab from './components/MarksTab.jsx'
+
+const TABS = ['overview', 'datesheet', 'marks']
 
 function InfoItem({ icon: Icon, label, children }) {
   return (
@@ -34,6 +38,12 @@ export default function ExamDetailPage() {
   const navigate = useNavigate()
   const { notify } = useToast()
   const { classes } = useClasses()
+  const [searchParams, setSearchParams] = useSearchParams()
+  const tabParam = searchParams.get('tab')
+  const tab = TABS.includes(tabParam) ? tabParam : 'overview'
+  const openPaperId = searchParams.get('paper')
+  const setTab = (value) => setSearchParams(value === 'overview' ? {} : { tab: value }, { replace: true })
+  const openPaper = (id) => setSearchParams(id ? { tab: 'marks', paper: id } : { tab: 'marks' }, { replace: true })
 
   const { data: exam, loading, error, reload: reloadExam } = useFetch(() => examsApi.get(examId), [examId], {
     errorMessage: 'Could not load the exam.',
@@ -44,6 +54,14 @@ export default function ExamDetailPage() {
     error: classesError,
     reload: reloadClasses,
   } = useFetch(() => examsApi.listClasses(examId), [examId], { errorMessage: 'Could not load the exam’s classes.' })
+
+  const {
+    data: schedule,
+    loading: scheduleLoading,
+    error: scheduleError,
+    reload: reloadSchedule,
+  } = useFetch(() => examsApi.listSchedule(examId), [examId], { errorMessage: 'Could not load the date sheet.' })
+  const papers = schedule?.items ?? []
 
   const [editOpen, setEditOpen] = useState(false)
   const [addOpen, setAddOpen] = useState(false)
@@ -57,6 +75,7 @@ export default function ExamDetailPage() {
   const reloadAll = () => {
     reloadExam()
     reloadClasses()
+    reloadSchedule()
   }
 
   const confirmDeleteExam = async () => {
@@ -75,8 +94,8 @@ export default function ExamDetailPage() {
       notify(`${removing.className} removed from this exam.`, 'success')
       reloadAll()
     } catch (err) {
-      if (getErrorCode(err) === 'EXAM_CLASS_HAS_RESULTS') {
-        notify(`${removing.className} already has results recorded. Clear its results on the marks page before removing it.`, 'error')
+      if (getErrorCode(err) === 'EXAM_CLASS_HAS_SCHEDULE') {
+        notify(`${removing.className} still has papers on the date sheet. Delete those papers first, then remove the class.`, 'error')
       } else {
         notify(getErrorMessage(err, 'Could not remove the class.'), 'error')
       }
@@ -115,6 +134,19 @@ export default function ExamDetailPage() {
         </>
       }
     >
+      <Tabs
+        className="mb-5 max-w-full overflow-x-auto"
+        value={tab}
+        onChange={setTab}
+        options={[
+          { value: 'overview', label: 'Overview & Classes' },
+          { value: 'datesheet', label: 'Date Sheet', count: schedule ? papers.length : undefined },
+          { value: 'marks', label: 'Marks' },
+        ]}
+      />
+
+      {tab === 'overview' && (
+        <>
       <Card className="p-5 mb-6">
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-5">
           <InfoItem icon={CalendarDays} label="Dates">{examDates(exam)}</InfoItem>
@@ -145,7 +177,7 @@ export default function ExamDetailPage() {
             <EmptyState
               icon={Layers}
               title="No classes assigned"
-              message="Add a class to this exam to start entering marks."
+              message="Add a class to this exam, then build its date sheet."
               action={availableClasses.length > 0 && <Button icon={Plus} onClick={() => setAddOpen(true)}>Add class</Button>}
             />
           }
@@ -167,9 +199,6 @@ export default function ExamDetailPage() {
                   </Td>
                   <Td className="text-right whitespace-nowrap">
                     <div className="inline-flex items-center gap-1">
-                      <Button size="sm" variant="secondary" icon={ClipboardCheck} onClick={() => navigate(`/exams/${examId}/classes/${c.classId}`)}>
-                        Enter marks
-                      </Button>
                       <IconButton icon={X} label={`Remove ${c.className} from exam`} onClick={() => setRemoving(c)} />
                     </div>
                   </Td>
@@ -179,6 +208,35 @@ export default function ExamDetailPage() {
           </Table>
         </AsyncContent>
       </Card>
+        </>
+      )}
+
+      {tab === 'datesheet' && (
+        <DateSheetTab
+          examId={examId}
+          exam={exam}
+          examClasses={rows}
+          classes={classes}
+          papers={papers}
+          loading={scheduleLoading}
+          error={scheduleError}
+          reload={reloadAll}
+        />
+      )}
+
+      {tab === 'marks' && (
+        <MarksTab
+          examId={examId}
+          examClasses={rows}
+          classes={classes}
+          papers={papers}
+          loading={scheduleLoading}
+          error={scheduleError}
+          reload={reloadAll}
+          openPaperId={openPaperId}
+          onOpenPaper={openPaper}
+        />
+      )}
 
       <ExamFormModal open={editOpen} onClose={() => setEditOpen(false)} exam={exam} classes={classes} onSaved={() => {
         notify('Exam updated.', 'success')
@@ -207,7 +265,7 @@ export default function ExamDetailPage() {
           removing && (
             <>
               <span className="font-semibold text-ink">{removing.className}</span> will no longer take this exam. A class
-              that already has results recorded can't be removed — clear its results first.
+              that still has papers on the date sheet can't be removed — delete those papers first.
             </>
           )
         }

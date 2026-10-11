@@ -9,7 +9,6 @@ import StaffPage from '../features/admin/staff/StaffPage.jsx'
 import TimetablePage from '../features/admin/schedule/TimetablePage.jsx'
 import ExamsPage from '../features/admin/exams/ExamsPage.jsx'
 import ExamDetailPage from '../features/admin/exams/ExamDetailPage.jsx'
-import ExamMarksPage from '../features/admin/exams/ExamMarksPage.jsx'
 import AttendanceReportPage from '../features/admin/attendance/AttendanceReportPage.jsx'
 import ClassAttendancePage from '../features/admin/attendance/ClassAttendancePage.jsx'
 import TeacherAttendancePage from '../features/admin/teacherAttendance/TeacherAttendancePage.jsx'
@@ -31,7 +30,6 @@ export default function AdminRoutes() {
       <Route path="/timetable" element={<TimetablePage />} />
       <Route path="/exams" element={<ExamsPage />} />
       <Route path="/exams/:examId" element={<ExamDetailPage />} />
-      <Route path="/exams/:examId/classes/:classId" element={<ExamMarksPage />} />
       <Route path="/attendance" element={<AttendanceReportPage />} />
       <Route path="/attendance/:classId" element={<ClassAttendancePage />} />
       <Route path="/teacher-attendance" element={<TeacherAttendancePage />} />

@@ -40,7 +40,7 @@ export default function StudentsPage() {
   const [search, setSearch] = useState('')
   const [classId, setClassId] = useState('')
   const [sectionId, setSectionId] = useState('')
-  const [status, setStatus] = useState(RECORD_STATUS.ACTIVE)
+  const [status, setStatus] = useState(RECORD_STATUS.ALL)
   const [page, setPage] = useState(1)
   const debouncedSearch = useDebouncedValue(search.trim())
 
@@ -57,8 +57,8 @@ export default function StudentsPage() {
         search: debouncedSearch,
         classId,
         sectionId,
-        // backend defaults to ACTIVE when status is omitted
-        status: status === RECORD_STATUS.ACTIVE ? undefined : status,
+        // backend defaults to ACTIVE when status is omitted, so ALL is sent explicitly
+        status,
       }),
     [page, debouncedSearch, classId, sectionId, status],
     { errorMessage: 'Could not load students.' }

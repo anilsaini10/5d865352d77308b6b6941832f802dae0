@@ -15,7 +15,7 @@ const KIND_TABS = [
   { value: 'teacher', label: 'Teacher leave' },
 ]
 
-const STATUS_TABS = [...LEAVE_STATUSES.map(({ value, label }) => ({ value, label })), { value: 'ALL', label: 'All' }]
+const STATUS_TABS = [{ value: 'ALL', label: 'All' }, ...LEAVE_STATUSES.map(({ value, label }) => ({ value, label }))]
 
 function LeaveList({ kind, status, classId, sectionId }) {
   const [reviewTarget, setReviewTarget] = useState(null)
@@ -72,7 +72,7 @@ function LeaveList({ kind, status, classId, sectionId }) {
 
 export default function LeavePage() {
   const [kind, setKind] = useState('student')
-  const [status, setStatus] = useState('PENDING')
+  const [status, setStatus] = useState('ALL')
   const [classId, setClassId] = useState('')
   const [sectionId, setSectionId] = useState('')
   const { classes, sectionsOf } = useClasses()
