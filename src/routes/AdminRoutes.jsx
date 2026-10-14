@@ -15,6 +15,7 @@ import TeacherAttendancePage from '../features/admin/teacherAttendance/TeacherAt
 import LeavePage from '../features/admin/leave/LeavePage.jsx'
 import AnnouncementsPage from '../features/admin/announcements/AnnouncementsPage.jsx'
 import EventsPage from '../features/admin/events/EventsPage.jsx'
+import SchoolSettingsPage from '../features/admin/school/SchoolSettingsPage.jsx'
 import NotificationsPage from '../features/admin/notifications/NotificationsPage.jsx'
 
 export default function AdminRoutes() {
@@ -37,6 +38,7 @@ export default function AdminRoutes() {
       <Route path="/announcements" element={<AnnouncementsPage />} />
       <Route path="/events" element={<EventsPage />} />
       <Route path="/notifications" element={<NotificationsPage />} />
+      <Route path="/school" element={<SchoolSettingsPage />} />
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   )
