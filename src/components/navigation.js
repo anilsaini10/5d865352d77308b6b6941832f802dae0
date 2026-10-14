@@ -1,6 +1,6 @@
 import {
   LayoutDashboard, School, Users, Layers, BookOpen, GraduationCap, UserSquare2, BriefcaseBusiness,
-  CalendarClock, ClipboardList, CalendarCheck, UserCheck, CalendarOff, Megaphone, CalendarDays, Bell,
+  CalendarClock, ClipboardList, CalendarCheck, UserCheck, CalendarOff, Megaphone, CalendarDays, Bell, Settings,
 } from 'lucide-react'
 import { ROLES } from '../features/auth/roles.js'
 
@@ -51,6 +51,10 @@ export const NAV_BY_ROLE = {
         { to: '/events', label: 'Events', icon: CalendarDays },
         { to: '/notifications', label: 'Notifications', icon: Bell },
       ],
+    },
+    {
+      title: 'Settings',
+      items: [{ to: '/school', label: 'School settings', icon: Settings }],
     },
   ],
 }

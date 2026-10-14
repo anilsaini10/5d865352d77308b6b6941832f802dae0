@@ -45,6 +45,7 @@ export const ATTENDANCE_STATUSES = [
   { value: 'ABSENT', label: 'Absent', tone: 'danger' },
   { value: 'LATE', label: 'Late', tone: 'warning' },
   { value: 'LEAVE', label: 'Leave', tone: 'info' },
+  { value: 'HOLIDAY', label: 'Holiday', tone: 'neutral' },
 ]
 
 export const LEAVE_STATUSES = [

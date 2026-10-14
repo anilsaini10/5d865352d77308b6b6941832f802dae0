@@ -1,12 +1,13 @@
 import { ATTENDANCE_STATUSES } from '../../constants.js'
 
-const SHORT = { PRESENT: 'P', ABSENT: 'A', LATE: 'L', LEAVE: 'Lv' }
+const SHORT = { PRESENT: 'P', ABSENT: 'A', LATE: 'L', LEAVE: 'Lv', HOLIDAY: 'H' }
 
 const SELECTED = {
   PRESENT: 'bg-success/15 text-success border-success/40',
   ABSENT: 'bg-coral/15 text-coral border-coral/40',
   LATE: 'bg-warning/15 text-warning border-warning/40',
   LEAVE: 'bg-info/15 text-info border-info/40',
+  HOLIDAY: 'bg-line/60 text-ink/70 border-ink/20',
 }
 
 /** P / A / L / Lv segmented picker for one teacher's attendance status. */
