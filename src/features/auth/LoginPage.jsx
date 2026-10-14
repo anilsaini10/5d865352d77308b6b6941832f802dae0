@@ -70,9 +70,9 @@ export default function LoginPage() {
           <div className="w-12 h-12 rounded-2xl bg-board flex items-center justify-center mb-4 shadow-card">
             <GraduationCap size={24} className="text-chalk" strokeWidth={2.3} />
           </div>
-          {/* <img src={titleLogo} alt="logo" className="w-54 h-auto mb-2" /> */}
-          {/* <h1 className="font-display text-2xl font-semibold text-ink">Nought One</h1> */}
-          <h1 className="font-display text-2xl font-semibold text-ink">School Admin Pannel</h1>
+          <img src={titleLogo} alt="logo" className="w-54 h-auto mb-2" />
+          <h1 className="font-display text-2xl font-semibold text-ink">Nought One</h1>
+          {/* <h1 className="font-display text-2xl font-semibold text-ink">School Admin Pannel</h1> */}
           <p className="text-sm text-ink/55 mt-1.5">Sign in to the {ROLE_LABELS[role].toLowerCase()} console</p>
         </div>
 
