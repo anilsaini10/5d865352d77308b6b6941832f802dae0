@@ -12,6 +12,11 @@ export default function Sidebar({ open, onClose }) {
   const role = user?.role ?? ROLES.SUPER_ADMIN
   const navGroups = NAV_BY_ROLE[role] ?? []
   const roleLabel = ROLE_LABELS[role]
+  const isAdmin = role === ROLES.ADMIN
+  // Admin: first word of the school name on top, the rest below ("Admin Panel" if it's a single word).
+  const [firstWord = '', ...restWords] = (isAdmin ? user?.schoolName?.trim() ?? '' : '').split(/\s+/)
+  const brandTitle = firstWord || 'Nougth One'
+  const brandSubtitle = isAdmin ? restWords.join(' ') || 'Admin Panel' : roleLabel
 
   return (
     <>
@@ -32,9 +37,9 @@ export default function Sidebar({ open, onClose }) {
               <GraduationCap size={20} className="text-board" strokeWidth={2.4} />
             </div>
             <div>
-              <p className="font-display font-semibold text-lg leading-tight">Vidyalaya</p>
+              <p className="font-display font-semibold text-lg leading-tight truncate max-w-[10rem]" title={isAdmin ? user?.schoolName : undefined}>{brandTitle}</p>
               <p className="text-[11px] uppercase tracking-wider text-on-board/50 font-medium truncate max-w-[10rem]">
-                {role === ROLES.ADMIN && user?.schoolName ? user.schoolName : roleLabel}
+                {brandSubtitle}
               </p>
             </div>
           </div>
