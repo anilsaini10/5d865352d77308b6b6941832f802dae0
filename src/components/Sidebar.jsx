@@ -76,26 +76,26 @@ export default function Sidebar({ open, onClose }) {
           ))}
         </nav>
 
-        <div className="px-4 pb-5 pt-3 border-t border-on-board/10 mx-4">
-          <div className="flex items-center gap-3 px-1 py-2">
+        <div className="mx-4 mb-4 mt-2 p-3 rounded-2xl bg-board-dark border border-on-board/10 shadow-card">
+          <div className="flex items-center gap-3 px-1 pb-3 mb-2 border-b border-on-board/10">
             <div className="w-9 h-9 rounded-full bg-chalk text-board font-display font-semibold flex items-center justify-center text-sm shrink-0">
               {user?.name?.[0] ?? 'S'}
             </div>
             <div className="min-w-0">
               <p className="text-sm font-semibold truncate">{user?.name}</p>
-              <p className="text-xs text-on-board/50 truncate">{roleLabel}</p>
+              <p className="text-xs text-on-board/60 truncate">{roleLabel}</p>
             </div>
           </div>
           <button
             onClick={() => setChangePasswordOpen(true)}
-            className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-sm font-medium text-on-board/65 hover:text-on-board hover:bg-on-board/5 transition-colors"
+            className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-sm font-medium text-on-board/75 hover:text-on-board hover:bg-on-board/10 transition-colors"
           >
             <KeyRound size={17} />
             Change password
           </button>
           <button
             onClick={logout}
-            className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-sm font-medium text-on-board/65 hover:text-on-board hover:bg-on-board/5 transition-colors"
+            className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-sm font-medium text-on-board/75 hover:text-on-board hover:bg-coral/80 transition-colors"
           >
             <LogOut size={17} />
             Log out
