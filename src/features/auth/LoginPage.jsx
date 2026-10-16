@@ -9,6 +9,7 @@ import { PANEL_ROLES, ROLE_LABELS, ROLES } from './roles.js'
 
 import titleLogo from '../../../src/assets/images/baner_title.png'
 // 👇 attached classroom image ko is path par save karo (ya apna path/name daal do)
+import brandLogo from '../../../src/assets/images/logo_title_transparent.png'
 import classroomImg from '../../../src/assets/images/login-classroom.jpg'
 
 const LAST_ROLE_KEY = 'panel_last_role'
@@ -96,6 +97,16 @@ export default function LoginPage() {
         {/* readable text ke liye dark overlay */}
         <div className="absolute inset-0 bg-gradient-to-t from-board via-board/85 to-board/30" />
 
+        {/* Transparent logo, top-left. The PNG has wide empty margins, so it's cropped to the artwork. */}
+        <div className="absolute z-10 top-10 left-12 xl:left-16 overflow-hidden" style={{ width: '16rem', height: '4.7rem' }}>
+          <img
+            src={brandLogo}
+            alt="Nought One"
+            className="max-w-none absolute"
+            style={{ width: '20.25rem', left: '-2.43rem', top: '-4.32rem' }}
+          />
+        </div>
+
         <div className="relative z-10 p-12 xl:p-16 max-w-2xl">
           <h2 className="font-display text-4xl xl:text-5xl font-semibold leading-[1.1] tracking-tight">
             Every classroom has a story. Keep yours in order.
@@ -123,7 +134,7 @@ export default function LoginPage() {
       <main className="flex items-center justify-center px-4 py-10">
         <div className="w-full max-w-sm">
           <div className="flex flex-col items-center text-center mb-8">
-            <img src={titleLogo} alt="logo" className="w-54 h-auto mb-2" />
+            <h1 className="text-2xl font-bold text-ink">Welcome Back!</h1>
             <p className="text-sm text-ink/55 mt-1.5">
               Sign in to the {ROLE_LABELS[role].toLowerCase()} console
             </p>
