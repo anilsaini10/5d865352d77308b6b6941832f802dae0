@@ -6,7 +6,7 @@ import { unwrap, normalizePage, params } from '../../../api/apiHelpers.js'
  * @property {string} id
  * @property {string} title
  * @property {string|null} description
- * @property {'HOLIDAY'|'EXAM'|'MEETING'|'ACTIVITY'|'OTHER'} eventType
+ * @property {'HOLIDAY'|'GOVERNMENT_HOLIDAY'|'VACATION'|'EXAM'|'MEETING'|'ACTIVITY'|'OTHER'} eventType
  * @property {'ALL'|'TEACHER'|'PARENT'} audience
  * @property {string} startDate
  * @property {string} endDate
@@ -29,6 +29,15 @@ export const eventsApi = {
   /** Sends push + in-app notifications. endDate defaults to startDate. */
   create(body) {
     return httpClient.post('/admin/events', body).then(unwrap)
+  },
+
+  /**
+   * Bulk import (max 500 rows, no push notifications). `dryRun` validates only and returns a per-row report;
+   * a real import with any bad row fails with 400 BULK_VALIDATION_FAILED (details.results) and saves nothing.
+   * @returns {Promise<{dryRun?:boolean, total?:number, valid?:number, invalid?:number, created:number, results:{index:number, status:string, errors?:string[]}[]}>}
+   */
+  bulk(rows, { dryRun = false } = {}) {
+    return httpClient.post('/admin/events', rows, { params: dryRun ? { dryRun: true } : undefined }).then(unwrap)
   },
 
   update(id, body) {

@@ -1,4 +1,5 @@
-import { Clock, DoorOpen, Pencil, Trash2, UserRound, Coffee } from 'lucide-react'
+import { Link } from 'react-router-dom'
+import { Clock, DoorOpen, Pencil, Trash2, UserRound, UserSearch, Coffee } from 'lucide-react'
 import { IconButton } from '../../../../components/ui.jsx'
 import { formatTime } from '../../../../utils/format.js'
 import { SCHEDULE_TYPES } from '../../constants.js'
@@ -24,6 +25,16 @@ export default function ScheduleEntryCard({ entry, onEdit, onDelete }) {
           )}
         </p>
         <div className="flex -mr-1.5 -mt-1.5 shrink-0">
+          {!isBreak && entry.day && entry.startTime && (
+            <Link
+              to={`/teacher-availability?day=${entry.day}&start=${entry.startTime.slice(0, 5)}&end=${entry.endTime.slice(0, 5)}`}
+              title="Find a substitute teacher for this slot"
+              aria-label="Find substitute"
+              className="rounded-lg p-1.5 text-ink/40 hover:text-board hover:bg-board/10 transition-colors"
+            >
+              <UserSearch size={15} />
+            </Link>
+          )}
           <IconButton icon={Pencil} label="Edit entry" tone="primary" onClick={() => onEdit(entry)} />
           <IconButton icon={Trash2} label="Delete entry" tone="danger" onClick={() => onDelete(entry)} />
         </div>

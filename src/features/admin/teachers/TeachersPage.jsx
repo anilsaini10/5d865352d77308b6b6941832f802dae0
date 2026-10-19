@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Plus, UserSquare2, Pencil, Trash2, RotateCcw } from 'lucide-react'
+import { Plus, UserSquare2, Pencil, Trash2, RotateCcw, KeyRound } from 'lucide-react'
 import AppShell from '../../../components/AppShell.jsx'
 import Pagination from '../../../components/Pagination.jsx'
 import {
@@ -14,6 +14,8 @@ import { getErrorMessage } from '../../../api/httpClient.js'
 import { experienceLabel } from '../../../utils/format.js'
 import { DEFAULT_PASSWORD_HINT } from '../constants.js'
 import { useClasses } from '../classes/useClasses.js'
+import ResetPasswordDialog from '../../../components/ResetPasswordDialog.jsx'
+import { usersApi } from '../users/users.api.js'
 import { teachersApi } from './teachers.api.js'
 import TeacherFormModal from './components/TeacherFormModal.jsx'
 import { DeleteTeacherDialog } from './components/TeacherDialogs.jsx'
@@ -38,6 +40,7 @@ export default function TeachersPage() {
   const [formModal, setFormModal] = useState(null) // { teacher? }
   const [justCreated, setJustCreated] = useState(null)
   const [deleteTarget, setDeleteTarget] = useState(null)
+  const [resetTarget, setResetTarget] = useState(null)
 
   useEffect(() => {
     setPage(1)
@@ -175,6 +178,9 @@ export default function TeachersPage() {
                     </Td>
                     <Td className="text-right whitespace-nowrap">
                       <IconButton icon={Pencil} label={`Edit ${t.name}`} tone="primary" onClick={stop(() => setFormModal({ teacher: t }))} />
+                      {active && t.userId && (
+                        <IconButton icon={KeyRound} label={`Reset password for ${t.name}`} tone="primary" onClick={stop(() => setResetTarget({ id: t.userId, name: t.name }))} />
+                      )}
                       {active ? (
                         <IconButton icon={Trash2} label={`Delete ${t.name}`} tone="danger" onClick={stop(() => setDeleteTarget(t))} />
                       ) : (
@@ -202,6 +208,7 @@ export default function TeachersPage() {
         onSaved={handleSaved}
       />
 
+      <ResetPasswordDialog target={resetTarget} request={usersApi.resetPassword} onClose={() => setResetTarget(null)} onStale={reload} />
       <DeleteTeacherDialog teacher={deleteTarget} onClose={() => setDeleteTarget(null)} onConfirm={confirmDelete} />
     </AppShell>
   )

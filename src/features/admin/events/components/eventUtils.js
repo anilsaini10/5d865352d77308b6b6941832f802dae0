@@ -22,6 +22,10 @@ export const TONE_CHIP = {
   info: 'bg-info/15 text-info',
   warning: 'bg-warning/20 text-warning',
   neutral: 'bg-line/70 text-ink/70',
+  primary: 'bg-board/15 text-board',
+  maroon: 'bg-coral text-white',
+  redmid: 'bg-coral/35 text-coral',
+  amber: 'bg-chalk/30 text-chalk-ink',
 }
 
 export const TONE_DOT = {
@@ -30,6 +34,10 @@ export const TONE_DOT = {
   info: 'bg-info',
   warning: 'bg-warning',
   neutral: 'bg-ink/40',
+  primary: 'bg-board',
+  maroon: 'bg-coral ring-2 ring-coral/30',
+  redmid: 'bg-coral/60',
+  amber: 'bg-chalk',
 }
 
 /** "YYYY-MM-DD" → local Date at midnight. */

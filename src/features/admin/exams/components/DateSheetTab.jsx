@@ -1,5 +1,6 @@
 import { Fragment, useState } from 'react'
-import { CalendarPlus, ListPlus, Lock, Pencil, Plus, Trash2, CalendarDays } from 'lucide-react'
+import { Link } from 'react-router-dom'
+import { CalendarPlus, ListPlus, Lock, Pencil, Plus, Trash2, CalendarDays, UserSearch } from 'lucide-react'
 import { AsyncContent, Button, Card, ConfirmDialog, EmptyState, IconButton, Tabs, Table, THead, Th, Tr, Td } from '../../../../components/ui.jsx'
 import { useToast } from '../../../../context/ToastContext.jsx'
 import { getErrorCode, getErrorMessage } from '../../../../api/httpClient.js'
@@ -24,6 +25,14 @@ function PaperActions({ paper, onEdit, onDelete }) {
   const hasMarks = (paper.markedCount ?? 0) > 0
   return (
     <div className="inline-flex items-center gap-1">
+      <Link
+        to={`/teacher-availability?date=${paper.date}&start=${paper.startTime}&end=${paper.endTime}`}
+        title="Find a free teacher for this paper's slot"
+        aria-label="Find invigilator"
+        className="rounded-lg p-1.5 text-ink/40 hover:text-board hover:bg-board/10 transition-colors"
+      >
+        <UserSearch size={15} />
+      </Link>
       <IconButton icon={Pencil} label={`Edit ${paper.className} ${paper.subjectName} paper`} tone="primary" onClick={() => onEdit(paper)} />
       {hasMarks ? (
         <IconButton icon={Lock} label="Marks recorded — this paper can't be deleted" disabled className="opacity-50 cursor-not-allowed" />

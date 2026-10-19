@@ -1,16 +1,19 @@
 import { useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
-import { Pencil, Trash2, RotateCcw } from 'lucide-react'
+import { Pencil, Trash2, RotateCcw, KeyRound } from 'lucide-react'
 import AppShell from '../../../components/AppShell.jsx'
 import { Alert, Button, PageLoader, Tabs } from '../../../components/ui.jsx'
 import { useFetch } from '../../../hooks/useFetch.js'
 import { useToast } from '../../../context/ToastContext.jsx'
 import { getErrorMessage } from '../../../api/httpClient.js'
 import { useClasses } from '../classes/useClasses.js'
+import ResetPasswordDialog from '../../../components/ResetPasswordDialog.jsx'
+import { usersApi } from '../users/users.api.js'
 import { teachersApi } from './teachers.api.js'
 import TeacherFormModal from './components/TeacherFormModal.jsx'
 import TeacherProfileTab from './components/TeacherProfileTab.jsx'
 import TeacherSubjectsTab from './components/TeacherSubjectsTab.jsx'
+import TeacherAvailabilityTab from '../availability/TeacherAvailabilityTab.jsx'
 import TeacherTimetableTab from './components/TeacherTimetableTab.jsx'
 import { DeleteTeacherDialog } from './components/TeacherDialogs.jsx'
 import { useSubjects } from './components/useSubjects.js'
@@ -19,6 +22,7 @@ const TABS = [
   { value: 'profile', label: 'Profile' },
   { value: 'subjects', label: 'Subjects' },
   { value: 'timetable', label: 'Timetable' },
+  { value: 'availability', label: 'Availability' },
 ]
 
 export default function TeacherDetailPage() {
@@ -31,6 +35,7 @@ export default function TeacherDetailPage() {
   const [tab, setTab] = useState('profile')
   const [editing, setEditing] = useState(false)
   const [deleting, setDeleting] = useState(false)
+  const [resetOpen, setResetOpen] = useState(false)
   const [restoring, setRestoring] = useState(false)
 
   const { data: teacher, loading, error, reload } = useFetch(() => teachersApi.get(teacherId), [teacherId], {
@@ -68,6 +73,11 @@ export default function TeacherDetailPage() {
       <Button variant="secondary" icon={Pencil} aria-label="Edit teacher" onClick={() => setEditing(true)}>
         <span className="hidden sm:inline">Edit</span>
       </Button>
+      {active && teacher.userId && (
+        <Button variant="secondary" icon={KeyRound} aria-label="Reset password" onClick={() => setResetOpen(true)}>
+          <span className="hidden sm:inline">Reset password</span>
+        </Button>
+      )}
       {active ? (
         <Button variant="danger-ghost" icon={Trash2} aria-label="Delete teacher" onClick={() => setDeleting(true)}>
           <span className="hidden sm:inline">Delete</span>
@@ -107,6 +117,7 @@ export default function TeacherDetailPage() {
             <TeacherSubjectsTab teacher={teacher} classes={classes} subjectNames={subjectNames} onChanged={reload} />
           )}
           {tab === 'timetable' && <TeacherTimetableTab teacherId={teacher.id} />}
+          {tab === 'availability' && <TeacherAvailabilityTab teacherId={teacher.id} />}
         </>
       ) : null}
 
@@ -123,6 +134,12 @@ export default function TeacherDetailPage() {
         }}
       />
 
+      <ResetPasswordDialog
+        target={resetOpen && teacher ? { id: teacher.userId, name: teacher.name } : null}
+        request={usersApi.resetPassword}
+        onClose={() => setResetOpen(false)}
+        onStale={reload}
+      />
       <DeleteTeacherDialog teacher={deleting ? teacher : null} onClose={() => setDeleting(false)} onConfirm={confirmDelete} />
     </AppShell>
   )

@@ -1,18 +1,21 @@
 import { useState } from 'react'
-import { NavLink } from 'react-router-dom'
+import { NavLink, useLocation } from 'react-router-dom'
 import { LogOut, KeyRound, GraduationCap, X } from 'lucide-react'
 import { useAuth } from '../features/auth/AuthContext.jsx'
 import ChangePasswordModal from '../features/auth/components/ChangePasswordModal.jsx'
 import { ROLE_LABELS, ROLES } from '../features/auth/roles.js'
 import { NAV_BY_ROLE } from './navigation.js'
+import { useSupportOpenCount } from '../features/support/useSupportOpenCount.js'
 
 export default function Sidebar({ open, onClose }) {
   const { logout, user } = useAuth()
+  const { pathname } = useLocation()
   const [changePasswordOpen, setChangePasswordOpen] = useState(false)
   const role = user?.role ?? ROLES.SUPER_ADMIN
   const navGroups = NAV_BY_ROLE[role] ?? []
   const roleLabel = ROLE_LABELS[role]
   const isAdmin = role === ROLES.ADMIN
+  const badges = { supportOpen: useSupportOpenCount(role === ROLES.SUPER_ADMIN) }
   // Admin: first word of the school name on top, the rest below ("Admin Panel" if it's a single word).
   const [firstWord = '', ...restWords] = (isAdmin ? user?.schoolName?.trim() ?? '' : '').split(/\s+/)
   const brandTitle = firstWord || 'Nougth One'
@@ -54,7 +57,7 @@ export default function Sidebar({ open, onClose }) {
               {group.title && (
                 <p className="px-3.5 pb-1 text-[11px] uppercase tracking-wider text-on-board/40 font-semibold">{group.title}</p>
               )}
-              {group.items.map(({ to, label, icon: Icon, end }) => (
+              {group.items.map(({ to, label, icon: Icon, end, badge, alsoActive }) => (
                 <NavLink
                   key={to}
                   to={to}
@@ -62,7 +65,7 @@ export default function Sidebar({ open, onClose }) {
                   onClick={onClose}
                   className={({ isActive }) =>
                     `flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm font-medium transition-colors ${
-                      isActive
+                      isActive || alsoActive?.some((p) => pathname === p || pathname.startsWith(`${p}/`))
                         ? 'bg-on-board/10 text-on-board'
                         : 'text-on-board/65 hover:text-on-board hover:bg-on-board/5'
                     }`
@@ -70,6 +73,11 @@ export default function Sidebar({ open, onClose }) {
                 >
                   <Icon size={18} strokeWidth={2.1} />
                   {label}
+                  {badge && badges[badge] > 0 && (
+                    <span className="ml-auto min-w-[1.375rem] text-center rounded-full bg-chalk text-board text-[11px] font-bold px-1.5 py-0.5" aria-label={`${badges[badge]} open`}>
+                      {badges[badge] > 99 ? '99+' : badges[badge]}
+                    </span>
+                  )}
                 </NavLink>
               ))}
             </div>

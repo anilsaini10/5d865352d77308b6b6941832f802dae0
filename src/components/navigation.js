@@ -1,6 +1,6 @@
 import {
   LayoutDashboard, School, Users, Layers, BookOpen, GraduationCap, UserSquare2, BriefcaseBusiness,
-  CalendarClock, ClipboardList, CalendarCheck, UserCheck, CalendarOff, Megaphone, CalendarDays, Bell, Settings,
+  CalendarClock, ClipboardList, CalendarOff, Megaphone, CalendarDays, Bell, Settings, LifeBuoy, Inbox, CalendarRange,
 } from 'lucide-react'
 import { ROLES } from '../features/auth/roles.js'
 
@@ -12,6 +12,7 @@ export const NAV_BY_ROLE = {
         { to: '/', label: 'Dashboard', icon: LayoutDashboard, end: true },
         { to: '/schools', label: 'Schools', icon: School },
         { to: '/admins', label: 'Admins', icon: Users },
+        { to: '/support', label: 'Support Inbox', icon: Inbox, badge: 'supportOpen' },
       ],
     },
   ],
@@ -26,23 +27,20 @@ export const NAV_BY_ROLE = {
         { to: '/subjects', label: 'Subjects', icon: BookOpen },
         { to: '/timetable', label: 'Timetable', icon: CalendarClock },
         { to: '/exams', label: 'Exams', icon: ClipboardList },
+        { to: '/academic-calendar', label: 'Academic Calendar', icon: CalendarRange },
       ],
     },
     {
       title: 'People',
       items: [
-        { to: '/students', label: 'Students', icon: GraduationCap },
-        { to: '/teachers', label: 'Teachers', icon: UserSquare2 },
+        { to: '/students', label: 'Students', icon: GraduationCap, alsoActive: ['/attendance'] },
+        { to: '/teachers', label: 'Teachers', icon: UserSquare2, alsoActive: ['/teacher-attendance', '/teacher-availability'] },
         { to: '/staff', label: 'Staff', icon: BriefcaseBusiness },
       ],
     },
     {
-      title: 'Attendance',
-      items: [
-        { to: '/attendance', label: 'Student attendance', icon: CalendarCheck },
-        { to: '/teacher-attendance', label: 'Teacher attendance', icon: UserCheck },
-        { to: '/leave', label: 'Leave requests', icon: CalendarOff },
-      ],
+      title: 'Requests',
+      items: [{ to: '/leave', label: 'Leave requests', icon: CalendarOff }],
     },
     {
       title: 'Communication',
@@ -54,7 +52,10 @@ export const NAV_BY_ROLE = {
     },
     {
       title: 'Settings',
-      items: [{ to: '/school', label: 'School settings', icon: Settings }],
+      items: [
+        { to: '/school', label: 'School settings', icon: Settings },
+        { to: '/help', label: 'Help & Support', icon: LifeBuoy },
+      ],
     },
   ],
 }

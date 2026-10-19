@@ -28,6 +28,11 @@ export const adminsApi = {
       .then((res) => res.data.data)
   },
 
+  /** Resets the admin's password to the default and logs them out everywhere. 404 ADMIN_NOT_FOUND. */
+  resetPassword(schoolId, adminId) {
+    return httpClient.post(`/super-admin/schools/${schoolId}/admins/${adminId}/reset-password`).then((res) => res.data.data)
+  },
+
   /** @returns {Promise<import('./admins.types.js').SchoolAdmin>} */
   setStatus(schoolId, adminId, isActive) {
     return httpClient

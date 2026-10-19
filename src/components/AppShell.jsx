@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { ArrowLeft, Menu } from 'lucide-react'
 import Sidebar from './Sidebar.jsx'
+import SectionSwitch from './SectionSwitch.jsx'
 import { useAuth } from '../features/auth/AuthContext.jsx'
 import { ROLES } from '../features/auth/roles.js'
 import NotificationBell from '../features/admin/notifications/NotificationBell.jsx'
@@ -49,6 +50,7 @@ export default function AppShell({ title, subtitle, actions, onBack, children })
         </header>
 
         <main className="flex-1 px-5 sm:px-8 py-6 max-w-[1400px] w-full mx-auto">
+          {showBell && <SectionSwitch />}
           {children}
         </main>
       </div>
