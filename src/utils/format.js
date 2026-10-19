@@ -75,3 +75,17 @@ export function titleCase(value) {
 export function cleanParams(params) {
   return Object.fromEntries(Object.entries(params).filter(([, v]) => v !== undefined && v !== '' && v !== null))
 }
+
+/** "2h ago", "3d ago", "just now" — falls back to a date after a month. */
+export function timeAgo(value) {
+  if (!value) return '—'
+  const diff = Date.now() - new Date(value).getTime()
+  if (Number.isNaN(diff)) return '—'
+  const min = Math.floor(diff / 60000)
+  if (min < 1) return 'just now'
+  if (min < 60) return `${min}m ago`
+  const hr = Math.floor(min / 60)
+  if (hr < 24) return `${hr}h ago`
+  const day = Math.floor(hr / 24)
+  return day < 30 ? `${day}d ago` : formatDate(value)
+}

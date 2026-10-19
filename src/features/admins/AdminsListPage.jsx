@@ -3,6 +3,7 @@ import { Plus, Search, Users2, Loader2 } from 'lucide-react'
 import AppShell from '../../components/AppShell.jsx'
 import Pagination from '../../components/Pagination.jsx'
 import { ConfirmDialog, EmptyState } from '../../components/ui.jsx'
+import ResetPasswordDialog from '../../components/ResetPasswordDialog.jsx'
 import { fetchAdminsDirectory } from './adminsDirectory.api.js'
 import { adminsApi } from './admins.api.js'
 import { getErrorMessage } from '../../api/httpClient.js'
@@ -27,6 +28,8 @@ export default function AdminsListPage() {
   const [adminModal, setAdminModal] = useState(null) // { admin? } — no admin means "create"
   const [justCreated, setJustCreated] = useState(null)
   const [deactivateTarget, setDeactivateTarget] = useState(null)
+  const [resetTarget, setResetTarget] = useState(null)
+  const [reloadKey, setReloadKey] = useState(0)
 
   useEffect(() => {
     let cancelled = false
@@ -50,7 +53,7 @@ export default function AdminsListPage() {
     return () => {
       cancelled = true
     }
-  }, [])
+  }, [reloadKey])
 
   useEffect(() => {
     setPage(1)
@@ -169,6 +172,7 @@ export default function AdminsListPage() {
             showSchool
             onEdit={(admin) => setAdminModal({ admin })}
             onToggleStatus={(admin) => (admin.isActive ? setDeactivateTarget(admin) : reactivate(admin))}
+            onResetPassword={(admin) => setResetTarget({ id: admin.id, name: admin.name, schoolId: admin.schoolId })}
           />
         )}
       </div>
@@ -183,6 +187,13 @@ export default function AdminsListPage() {
         schools={schools}
         admin={adminModal?.admin}
         onSaved={handleAdminSaved}
+      />
+
+      <ResetPasswordDialog
+        target={resetTarget}
+        request={() => adminsApi.resetPassword(resetTarget.schoolId, resetTarget.id)}
+        onClose={() => setResetTarget(null)}
+        onStale={() => setReloadKey((k) => k + 1)}
       />
 
       <ConfirmDialog

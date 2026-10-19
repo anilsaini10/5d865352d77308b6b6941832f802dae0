@@ -1,3 +1,4 @@
+import { KeyRound } from 'lucide-react'
 import { Modal, Badge, Button, PageLoader } from '../../../../components/ui.jsx'
 import { useFetch } from '../../../../hooks/useFetch.js'
 import { formatDate } from '../../../../utils/format.js'
@@ -37,7 +38,7 @@ function AttendanceMeter({ value }) {
 }
 
 /** Read-only view of every student field. Refetches so the data is fresh. */
-export default function StudentDetailsModal({ student: row, onClose, onEdit }) {
+export default function StudentDetailsModal({ student: row, onClose, onEdit, onResetParentPassword }) {
   const { data, loading } = useFetch(() => studentsApi.get(row.id), [row?.id], {
     enabled: !!row,
     errorMessage: 'Could not refresh student details.',
@@ -73,6 +74,11 @@ export default function StudentDetailsModal({ student: row, onClose, onEdit }) {
             <Detail label="Name">{s.parentName}</Detail>
             <Detail label="Phone">{s.parentPhone}</Detail>
             <Detail label="Email (login)" wide>{s.parentEmail}</Detail>
+            {onResetParentPassword && s.parentUserId && (
+              <div className="sm:col-span-2">
+                <Button variant="secondary" size="sm" icon={KeyRound} onClick={() => onResetParentPassword(s)}>Reset parent password</Button>
+              </div>
+            )}
           </Group>
 
           <Group title="Other">

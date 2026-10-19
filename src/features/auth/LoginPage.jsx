@@ -3,7 +3,7 @@ import { Navigate, useLocation, useNavigate } from 'react-router-dom'
 import { Eye, EyeOff, ArrowRight, Loader2 } from 'lucide-react'
 import { useAuth } from './AuthContext.jsx'
 import { validateLoginForm } from './auth.validation.js'
-import { getErrorMessage } from '../../api/httpClient.js'
+import { getErrorCode, getErrorMessage } from '../../api/httpClient.js'
 import { inputClass, Field } from '../../components/ui.jsx'
 import { PANEL_ROLES, ROLE_LABELS, ROLES } from './roles.js'
 
@@ -79,7 +79,7 @@ export default function LoginPage() {
       }
       navigate(location.state?.from || '/', { replace: true })
     } catch (err) {
-      setServerError(getErrorMessage(err, 'Invalid credentials.'))
+      setServerError(getErrorCode(err) === 'INVALID_CREDENTIALS' ? 'Incorrect email/mobile or password.' : getErrorMessage(err, 'Could not sign in. Please try again.'))
     } finally {
       setSubmitting(false)
     }
@@ -171,12 +171,12 @@ export default function LoginPage() {
               </p>
             )}
 
-            <Field label="Email or phone" required error={errors.identifier}>
+            <Field label="Email or mobile number" required error={errors.identifier}>
               <input
                 type="text"
                 value={identifier}
                 onChange={(e) => setIdentifier(e.target.value)}
-                placeholder="you@example.com"
+                placeholder="Email or mobile number"
                 className={inputClass}
                 autoComplete="username"
                 autoFocus

@@ -28,6 +28,8 @@ import { useClasses } from '../classes/useClasses.js'
 import { GENDERS, enumMeta } from '../constants.js'
 import { studentsApi, parseSuggestedRollNo } from './students.api.js'
 import StudentFormModal from './components/StudentFormModal.jsx'
+import ResetPasswordDialog from '../../../components/ResetPasswordDialog.jsx'
+import { usersApi } from '../users/users.api.js'
 import StudentDetailsModal from './components/StudentDetailsModal.jsx'
 import StudentCreatedBanner from './components/StudentCreatedBanner.jsx'
 
@@ -47,6 +49,7 @@ export default function StudentsPage() {
   const [formModal, setFormModal] = useState(null) // { student?, restore? } — no student means "create"
   const [viewing, setViewing] = useState(null)
   const [deleteTarget, setDeleteTarget] = useState(null)
+  const [resetTarget, setResetTarget] = useState(null)
   const [justCreated, setJustCreated] = useState(null)
 
   const { data, loading, error, reload } = useFetch(
@@ -262,12 +265,15 @@ export default function StudentsPage() {
         <StudentDetailsModal
           student={viewing}
           onClose={() => setViewing(null)}
+          onResetParentPassword={(s) => setResetTarget({ id: s.parentUserId, name: s.parentName || 'the parent', note: 'This parent account is shared by all their children.' })}
           onEdit={(s) => {
             setViewing(null)
             setFormModal({ student: s })
           }}
         />
       )}
+
+      <ResetPasswordDialog target={resetTarget} request={usersApi.resetPassword} onClose={() => setResetTarget(null)} onStale={reload} />
 
       <ConfirmDialog
         open={!!deleteTarget}

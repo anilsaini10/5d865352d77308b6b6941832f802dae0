@@ -75,3 +75,14 @@ body {
 .animate-toast {
   animation: toast-in 0.25s ease-out both;
 }
+
+/* Rich text (help editor + rendered queries). Tailwind's reset strips list/heading styles. */
+.rich-content { line-height: 1.6; word-break: break-word; }
+.rich-content p, .rich-content div { margin: 0 0 0.35rem; }
+.rich-content ul { list-style: disc; padding-left: 1.4rem; margin: 0.25rem 0; }
+.rich-content ol { list-style: decimal; padding-left: 1.4rem; margin: 0.25rem 0; }
+.rich-content h3 { font-size: 1.125rem; font-weight: 700; margin: 0.5rem 0 0.25rem; }
+.rich-content h4 { font-size: 1rem; font-weight: 600; margin: 0.4rem 0 0.2rem; }
+.rich-content blockquote { border-left: 3px solid rgb(var(--c-line-strong)); padding-left: 0.75rem; margin: 0.4rem 0; opacity: 0.8; }
+.rich-content a { text-decoration: underline; color: rgb(var(--c-board)); }
+.rich-editor:empty::before { content: attr(data-placeholder); opacity: 0.35; pointer-events: none; }

@@ -1,11 +1,11 @@
-import { Users2, Pencil, UserX, UserCheck } from 'lucide-react'
+import { Users2, Pencil, UserX, UserCheck, KeyRound } from 'lucide-react'
 import { Badge, EmptyState } from '../../../components/ui.jsx'
 
 function formatDate(iso) {
   return new Date(iso).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' })
 }
 
-export default function AdminsTable({ admins, showSchool = false, onEdit, onToggleStatus }) {
+export default function AdminsTable({ admins, showSchool = false, onEdit, onToggleStatus, onResetPassword }) {
   if (admins.length === 0) {
     return (
       <EmptyState
@@ -49,6 +49,15 @@ export default function AdminsTable({ admins, showSchool = false, onEdit, onTogg
                 >
                   <Pencil size={15} />
                 </button>
+                {onResetPassword && (
+                  <button
+                    onClick={() => onResetPassword(admin)}
+                    className="flex items-center gap-1 text-xs font-semibold rounded-lg px-2.5 py-1.5 text-ink/60 hover:text-ink hover:bg-line/50 transition-colors"
+                  >
+                    <KeyRound size={14} />
+                    Reset password
+                  </button>
+                )}
                 <button
                   onClick={() => onToggleStatus(admin)}
                   className={`flex items-center gap-1 text-xs font-semibold rounded-lg px-2.5 py-1.5 transition-colors ${

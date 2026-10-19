@@ -3,6 +3,7 @@ import DashboardPage from '../features/dashboard/DashboardPage.jsx'
 import SchoolsListPage from '../features/schools/SchoolsListPage.jsx'
 import CreateSchoolPage from '../features/schools/CreateSchoolPage.jsx'
 import SchoolDetailPage from '../features/schools/SchoolDetailPage.jsx'
+import SupportInboxPage from '../features/support/SupportInboxPage.jsx'
 import AdminsListPage from '../features/admins/AdminsListPage.jsx'
 
 export default function SuperAdminRoutes() {
@@ -13,6 +14,7 @@ export default function SuperAdminRoutes() {
       <Route path="/schools/new" element={<CreateSchoolPage />} />
       <Route path="/schools/:schoolId" element={<SchoolDetailPage />} />
       <Route path="/admins" element={<AdminsListPage />} />
+      <Route path="/support" element={<SupportInboxPage />} />
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   )

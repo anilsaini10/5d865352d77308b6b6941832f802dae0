@@ -16,7 +16,7 @@ function validateNewPassword(newPassword, confirmPassword) {
 
 export function validateLoginForm({ identifier, password }) {
   const errors = {}
-  if (!identifier?.trim()) errors.identifier = 'Email or phone is required.'
+  if (!identifier?.trim()) errors.identifier = 'Enter your email or mobile number.'
   if (!password) errors.password = 'Password is required.'
   return errors
 }

@@ -4,6 +4,7 @@ import { useForm, FormProvider } from 'react-hook-form'
 import { ArrowLeft, Loader2, UserPlus } from 'lucide-react'
 import AppShell from '../../components/AppShell.jsx'
 import { EmptyState, ConfirmDialog } from '../../components/ui.jsx'
+import ResetPasswordDialog from '../../components/ResetPasswordDialog.jsx'
 import { schoolsApi } from './schools.api.js'
 import { adminsApi } from '../admins/admins.api.js'
 import { buildSchoolPayload, toSchoolFormValues } from './schools.validation.js'
@@ -31,6 +32,7 @@ export default function SchoolDetailPage() {
   const [adminModal, setAdminModal] = useState(null) // { admin? } — no admin means "create"
   const [justCreated, setJustCreated] = useState(location.state?.justCreatedAdmin || null)
   const [deactivateTarget, setDeactivateTarget] = useState(null)
+  const [resetTarget, setResetTarget] = useState(null)
 
   const form = useForm({ defaultValues: toSchoolFormValues(null) })
 
@@ -205,6 +207,7 @@ export default function SchoolDetailPage() {
           admins={admins}
           onEdit={(admin) => setAdminModal({ admin })}
           onToggleStatus={(admin) => (admin.isActive ? setDeactivateTarget(admin) : reactivate(admin))}
+          onResetPassword={(admin) => setResetTarget({ id: admin.id, name: admin.name })}
         />
       </div>
 
@@ -214,6 +217,13 @@ export default function SchoolDetailPage() {
         schoolId={schoolId}
         admin={adminModal?.admin}
         onSaved={handleAdminSaved}
+      />
+
+      <ResetPasswordDialog
+        target={resetTarget}
+        request={(adminId) => adminsApi.resetPassword(schoolId, adminId)}
+        onClose={() => setResetTarget(null)}
+        onStale={() => adminsApi.list(schoolId).then(setAdmins).catch(() => {})}
       />
 
       <ConfirmDialog
