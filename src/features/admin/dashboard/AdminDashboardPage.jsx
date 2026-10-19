@@ -8,6 +8,7 @@ import { formatNumber } from '../../../utils/format.js'
 import { attendanceReportApi } from '../attendance/attendance.api.js'
 import { fetchAllForDate } from '../teacherAttendance/teacherAttendance.utils.js'
 import { todayInput } from '../../../utils/format.js'
+import AdSlot from '../../../components/ads/AdSlot.jsx'
 import { adminDashboardApi } from './dashboard.api.js'
 import { BarList, ChartCard, DonutChart, StackedColumns } from './components/charts.jsx'
 
@@ -132,6 +133,8 @@ export default function AdminDashboardPage() {
             </ChartState>
           </ChartCard>
         </div>
+
+        <AdSlot className="mt-6" />
         </>
       )}
     </AppShell>

@@ -13,6 +13,7 @@ import { teachersApi } from './teachers.api.js'
 import TeacherFormModal from './components/TeacherFormModal.jsx'
 import TeacherProfileTab from './components/TeacherProfileTab.jsx'
 import TeacherSubjectsTab from './components/TeacherSubjectsTab.jsx'
+import TeacherAvailabilityTab from '../availability/TeacherAvailabilityTab.jsx'
 import TeacherTimetableTab from './components/TeacherTimetableTab.jsx'
 import { DeleteTeacherDialog } from './components/TeacherDialogs.jsx'
 import { useSubjects } from './components/useSubjects.js'
@@ -21,6 +22,7 @@ const TABS = [
   { value: 'profile', label: 'Profile' },
   { value: 'subjects', label: 'Subjects' },
   { value: 'timetable', label: 'Timetable' },
+  { value: 'availability', label: 'Availability' },
 ]
 
 export default function TeacherDetailPage() {
@@ -115,6 +117,7 @@ export default function TeacherDetailPage() {
             <TeacherSubjectsTab teacher={teacher} classes={classes} subjectNames={subjectNames} onChanged={reload} />
           )}
           {tab === 'timetable' && <TeacherTimetableTab teacherId={teacher.id} />}
+          {tab === 'availability' && <TeacherAvailabilityTab teacherId={teacher.id} />}
         </>
       ) : null}
 

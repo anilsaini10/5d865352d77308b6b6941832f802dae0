@@ -1,6 +1,6 @@
 import {
   LayoutDashboard, School, Users, Layers, BookOpen, GraduationCap, UserSquare2, BriefcaseBusiness,
-  CalendarClock, ClipboardList, CalendarOff, Megaphone, CalendarDays, Bell, Settings, LifeBuoy, Inbox,
+  CalendarClock, ClipboardList, CalendarOff, Megaphone, CalendarDays, Bell, Settings, LifeBuoy, Inbox, CalendarRange,
 } from 'lucide-react'
 import { ROLES } from '../features/auth/roles.js'
 
@@ -27,13 +27,14 @@ export const NAV_BY_ROLE = {
         { to: '/subjects', label: 'Subjects', icon: BookOpen },
         { to: '/timetable', label: 'Timetable', icon: CalendarClock },
         { to: '/exams', label: 'Exams', icon: ClipboardList },
+        { to: '/academic-calendar', label: 'Academic Calendar', icon: CalendarRange },
       ],
     },
     {
       title: 'People',
       items: [
         { to: '/students', label: 'Students', icon: GraduationCap, alsoActive: ['/attendance'] },
-        { to: '/teachers', label: 'Teachers', icon: UserSquare2, alsoActive: ['/teacher-attendance'] },
+        { to: '/teachers', label: 'Teachers', icon: UserSquare2, alsoActive: ['/teacher-attendance', '/teacher-availability'] },
         { to: '/staff', label: 'Staff', icon: BriefcaseBusiness },
       ],
     },

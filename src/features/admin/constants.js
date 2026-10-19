@@ -32,11 +32,14 @@ export const AUDIENCE_LABELS = Object.fromEntries(AUDIENCES.map((a) => [a.value,
 
 export const ANNOUNCEMENT_STATUS_TONES = { SCHEDULED: 'warning', ACTIVE: 'success', EXPIRED: 'neutral' }
 
+// `closed`: the school is closed on these days (counts against working days).
 export const EVENT_TYPES = [
-  { value: 'HOLIDAY', label: 'Holiday', tone: 'success' },
-  { value: 'EXAM', label: 'Exam', tone: 'danger' },
-  { value: 'MEETING', label: 'Meeting', tone: 'info' },
-  { value: 'ACTIVITY', label: 'Activity', tone: 'warning' },
+  { value: 'HOLIDAY', label: 'School holiday', tone: 'danger', closed: true },
+  { value: 'GOVERNMENT_HOLIDAY', label: 'Government holiday', tone: 'maroon', closed: true },
+  { value: 'VACATION', label: 'Vacation / break', tone: 'redmid', closed: true },
+  { value: 'EXAM', label: 'Exam', tone: 'primary' },
+  { value: 'MEETING', label: 'Meeting / PTM', tone: 'amber' },
+  { value: 'ACTIVITY', label: 'Activity / function', tone: 'success' },
   { value: 'OTHER', label: 'Other', tone: 'neutral' },
 ]
 

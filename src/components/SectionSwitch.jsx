@@ -9,6 +9,7 @@ const SECTIONS = [
   [
     { to: '/teachers', label: 'Teachers' },
     { to: '/teacher-attendance', label: 'Teacher attendance' },
+    { to: '/teacher-availability', label: 'Availability' },
   ],
 ]
 
