@@ -1,3 +1,5 @@
+import { validateUsername } from '../../../utils/username.js'
+
 export const TEACHER_NAME_MIN = 2
 export const TEACHER_NAME_MAX = 100
 export const EMAIL_PATTERN = /^\S+@\S+\.\S+$/
@@ -14,6 +16,8 @@ export function validateTeacherForm(form) {
   }
   if (!EMAIL_PATTERN.test(form.email.trim())) errors.email = 'Enter a valid email address.'
   if (!PHONE_PATTERN.test(form.phone.trim())) errors.phone = 'Phone must be 10-15 digits.'
+  const usernameError = validateUsername(form.username)
+  if (usernameError) errors.username = usernameError
   if (!form.gender) errors.gender = 'Select a gender.'
 
   const salary = Number(form.salary)

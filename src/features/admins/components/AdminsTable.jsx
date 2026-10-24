@@ -22,6 +22,7 @@ export default function AdminsTable({ admins, showSchool = false, onEdit, onTogg
         <tr className="border-b border-line text-left text-xs uppercase tracking-wide text-ink/45">
           <th className="px-5 py-3 font-semibold">Name</th>
           <th className="px-5 py-3 font-semibold">Email</th>
+          <th className="px-5 py-3 font-semibold">Username</th>
           <th className="px-5 py-3 font-semibold">Phone</th>
           {showSchool && <th className="px-5 py-3 font-semibold">School</th>}
           <th className="px-5 py-3 font-semibold">Status</th>
@@ -34,6 +35,7 @@ export default function AdminsTable({ admins, showSchool = false, onEdit, onTogg
           <tr key={admin.id} className="border-b border-line last:border-0">
             <td className="px-5 py-3.5 font-semibold text-ink">{admin.name}</td>
             <td className="px-5 py-3.5 text-ink/65">{admin.email}</td>
+            <td className="px-5 py-3.5 text-ink/65 font-mono text-xs">{admin.username || '—'}</td>
             <td className="px-5 py-3.5 text-ink/65">{admin.phone || '—'}</td>
             {showSchool && <td className="px-5 py-3.5 text-ink/65">{admin.schoolName || '—'}</td>}
             <td className="px-5 py-3.5">

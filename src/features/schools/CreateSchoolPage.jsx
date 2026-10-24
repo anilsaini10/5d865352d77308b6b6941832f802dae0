@@ -11,7 +11,7 @@ import { validateAdminForm } from '../admins/admins.validation.js'
 import { getErrorMessage } from '../../api/httpClient.js'
 import { useToast } from '../../context/ToastContext.jsx'
 
-const emptyAdmin = { name: '', email: '', phone: '' }
+const emptyAdmin = { name: '', email: '', phone: '', username: '' }
 
 export default function CreateSchoolPage() {
   const navigate = useNavigate()
@@ -38,6 +38,7 @@ export default function CreateSchoolPage() {
         name: adminForm.name.trim(),
         email: adminForm.email.trim(),
         phone: adminForm.phone.trim() || undefined,
+        username: adminForm.username.trim().toLowerCase() || undefined,
       }
     }
 
@@ -98,6 +99,15 @@ export default function CreateSchoolPage() {
                     value={adminForm.email}
                     onChange={setAdminField('email')}
                     placeholder="meera@school.edu"
+                  />
+                </Field>
+                <Field label="Admin username" error={adminErrors.username} hint="Optional · Saved in lowercase">
+                  <input
+                    className={inputClass}
+                    value={adminForm.username}
+                    onChange={setAdminField('username')}
+                    onBlur={() => setAdminForm((f) => ({ ...f, username: f.username.trim().toLowerCase() }))}
+                    placeholder="meera.kapoor"
                   />
                 </Field>
                 <Field label="Admin phone" error={adminErrors.phone} hint="Optional, 10-15 digits">

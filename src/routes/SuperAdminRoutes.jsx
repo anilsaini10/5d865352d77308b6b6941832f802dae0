@@ -5,6 +5,10 @@ import CreateSchoolPage from '../features/schools/CreateSchoolPage.jsx'
 import SchoolDetailPage from '../features/schools/SchoolDetailPage.jsx'
 import SupportInboxPage from '../features/support/SupportInboxPage.jsx'
 import AdminsListPage from '../features/admins/AdminsListPage.jsx'
+import FeaturesPage from '../features/subscription/features/FeaturesPage.jsx'
+import PlansPage from '../features/subscription/plans/PlansPage.jsx'
+import PlanDetailPage from '../features/subscription/plans/PlanDetailPage.jsx'
+import SubscriptionsPage from '../features/subscription/subscriptions/SubscriptionsPage.jsx'
 
 export default function SuperAdminRoutes() {
   return (
@@ -14,6 +18,10 @@ export default function SuperAdminRoutes() {
       <Route path="/schools/new" element={<CreateSchoolPage />} />
       <Route path="/schools/:schoolId" element={<SchoolDetailPage />} />
       <Route path="/admins" element={<AdminsListPage />} />
+      <Route path="/features" element={<FeaturesPage />} />
+      <Route path="/plans" element={<PlansPage />} />
+      <Route path="/plans/:planId" element={<PlanDetailPage />} />
+      <Route path="/subscriptions" element={<SubscriptionsPage />} />
       <Route path="/support" element={<SupportInboxPage />} />
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>

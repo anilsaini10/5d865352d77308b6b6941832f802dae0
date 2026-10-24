@@ -16,6 +16,7 @@ export function Badge({ tone = 'neutral', children }) {
     maroon: 'bg-coral text-white border-coral',
     redmid: 'bg-coral/35 text-coral border-coral/50',
     amber: 'bg-chalk/25 text-chalk-ink border-chalk/50',
+    cancelled: 'bg-ink/80 text-paper border-ink',
   }
   return (
     <span className={`inline-flex items-center gap-1.5 rounded-full border px-2.5 py-0.5 text-xs font-semibold capitalize ${tones[tone] || tones.neutral}`}>

@@ -1,9 +1,11 @@
 import { useState } from 'react'
 import { NavLink, useLocation } from 'react-router-dom'
-import { LogOut, KeyRound, GraduationCap, X } from 'lucide-react'
+import { LogOut, KeyRound, AtSign, GraduationCap, X } from 'lucide-react'
 import { useAuth } from '../features/auth/AuthContext.jsx'
 import ChangePasswordModal from '../features/auth/components/ChangePasswordModal.jsx'
+import UsernameModal from '../features/auth/components/UsernameModal.jsx'
 import { ROLE_LABELS, ROLES } from '../features/auth/roles.js'
+import { ConfirmDialog } from './ui.jsx'
 import { NAV_BY_ROLE } from './navigation.js'
 import { useSupportOpenCount } from '../features/support/useSupportOpenCount.js'
 
@@ -11,6 +13,8 @@ export default function Sidebar({ open, onClose }) {
   const { logout, user } = useAuth()
   const { pathname } = useLocation()
   const [changePasswordOpen, setChangePasswordOpen] = useState(false)
+  const [usernameOpen, setUsernameOpen] = useState(false)
+  const [logoutOpen, setLogoutOpen] = useState(false)
   const role = user?.role ?? ROLES.SUPER_ADMIN
   const navGroups = NAV_BY_ROLE[role] ?? []
   const roleLabel = ROLE_LABELS[role]
@@ -95,6 +99,13 @@ export default function Sidebar({ open, onClose }) {
             </div>
           </div>
           <button
+            onClick={() => setUsernameOpen(true)}
+            className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-sm font-medium text-on-board/75 hover:text-on-board hover:bg-on-board/10 transition-colors"
+          >
+            <AtSign size={17} />
+            Username
+          </button>
+          <button
             onClick={() => setChangePasswordOpen(true)}
             className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-sm font-medium text-on-board/75 hover:text-on-board hover:bg-on-board/10 transition-colors"
           >
@@ -102,7 +113,7 @@ export default function Sidebar({ open, onClose }) {
             Change password
           </button>
           <button
-            onClick={logout}
+            onClick={() => setLogoutOpen(true)}
             className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-sm font-medium text-on-board/75 hover:text-on-board hover:bg-coral/80 transition-colors"
           >
             <LogOut size={17} />
@@ -112,6 +123,15 @@ export default function Sidebar({ open, onClose }) {
       </aside>
 
       <ChangePasswordModal open={changePasswordOpen} onClose={() => setChangePasswordOpen(false)} />
+      <UsernameModal open={usernameOpen} onClose={() => setUsernameOpen(false)} />
+      <ConfirmDialog
+        open={logoutOpen}
+        onClose={() => setLogoutOpen(false)}
+        onConfirm={logout}
+        title="Log out?"
+        message="Are you sure you want to log out of your account?"
+        confirmLabel="Log out"
+      />
     </>
   )
 }

@@ -42,11 +42,22 @@ function refreshAccessToken() {
   return refreshPromise
 }
 
+let onPaymentRequired = null
+export function registerPaymentRequiredHandler(fn) {
+  onPaymentRequired = fn
+}
+
 httpClient.interceptors.response.use(
   (res) => res,
   async (error) => {
     const { config, response } = error
     const code = response?.data?.error?.code
+
+    if (response?.status === 402 && code === 'PAYMENT_REQUIRED') {
+      const details = response.data?.error?.details
+      onPaymentRequired?.(details)
+      return Promise.reject(error)
+    }
 
     if (response?.status === 401 && code === 'UNAUTHORIZED' && config && !config._retried) {
       config._retried = true

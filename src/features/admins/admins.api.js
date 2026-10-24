@@ -7,22 +7,24 @@ export const adminsApi = {
   },
 
   /** @returns {Promise<import('./admins.types.js').CreateAdminResult>} */
-  create(schoolId, { name, email, phone }) {
+  create(schoolId, { name, email, phone, username }) {
     return httpClient
       .post(`/super-admin/schools/${schoolId}/admins`, {
         name: name.trim(),
         email: email.trim(),
         phone: phone?.trim() || undefined,
+        username: username?.trim()?.toLowerCase() || undefined,
       })
       .then((res) => res.data.data)
   },
 
   /** @returns {Promise<import('./admins.types.js').SchoolAdmin>} */
-  update(schoolId, adminId, { name, email, phone }) {
+  update(schoolId, adminId, { name, email, phone, username }) {
     const payload = {}
     if (name?.trim()) payload.name = name.trim()
     if (email?.trim()) payload.email = email.trim()
     if (phone?.trim()) payload.phone = phone.trim()
+    if (username !== undefined) payload.username = username?.trim()?.toLowerCase() || null
     return httpClient
       .patch(`/super-admin/schools/${schoolId}/admins/${adminId}`, payload)
       .then((res) => res.data.data)

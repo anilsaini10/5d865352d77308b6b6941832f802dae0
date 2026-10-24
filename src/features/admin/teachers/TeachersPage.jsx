@@ -97,7 +97,7 @@ export default function TeachersPage() {
       {justCreated && (
         <CredentialsBanner
           title={`${justCreated.teacher?.name ?? 'Teacher'} was added`}
-          description={`They can log in with their email and this default password. ${DEFAULT_PASSWORD_HINT}`}
+          description={`They can log in with email${justCreated.teacher?.username ? `, username ${justCreated.teacher.username}` : ''} or mobile and this default password. ${DEFAULT_PASSWORD_HINT}`}
           loginId={justCreated.teacher?.email}
           password={justCreated.defaultPassword ?? '123456'}
           onDismiss={() => setJustCreated(null)}
@@ -105,7 +105,7 @@ export default function TeachersPage() {
       )}
 
       <div className="flex flex-col sm:flex-row gap-3 mb-5">
-        <SearchInput value={search} onChange={setSearch} placeholder="Search name, email, phone or ID..." />
+        <SearchInput value={search} onChange={setSearch} placeholder="Search name, email, username, phone or ID..." />
         <input
           className={`${inputClass} sm:w-44`}
           value={subject}
@@ -141,6 +141,7 @@ export default function TeachersPage() {
           <Table>
             <THead>
               <Th>Teacher</Th>
+              <Th>Username</Th>
               <Th>Contact</Th>
               <Th>Expertise</Th>
               <Th>Class teacher</Th>
@@ -157,6 +158,7 @@ export default function TeachersPage() {
                       <p className="font-semibold text-ink whitespace-nowrap">{t.name}</p>
                       <p className="text-xs text-ink/45">{t.employeeId}</p>
                     </Td>
+                    <Td className="font-mono text-xs">{t.username || <span className="text-ink/35">—</span>}</Td>
                     <Td>
                       <p className="whitespace-nowrap">{t.email}</p>
                       <p className="text-xs text-ink/45">{t.phone}</p>
