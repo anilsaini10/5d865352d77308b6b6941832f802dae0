@@ -27,4 +27,10 @@ export const authApi = {
       .post('/auth/reset-password/confirm', { email, otp, newPassword })
       .then((res) => res.data.data)
   },
+
+  updateUsername(username) {
+    return httpClient
+      .patch('/auth/username', { username })
+      .then((res) => res.data.data)
+  },
 }

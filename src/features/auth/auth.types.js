@@ -3,6 +3,7 @@
  * @property {string} id
  * @property {string} name
  * @property {string} email
+ * @property {string|null} username
  * @property {string|null} phone
  * @property {'SUPER_ADMIN'|'ADMIN'} role
  * @property {string|null} schoolId

@@ -35,6 +35,10 @@ export default function AdminCreatedBanner({ admin, defaultPassword, onDismiss }
             password won't be shown again.
           </p>
 
+          <p className="text-sm text-paper/70 mt-1">
+            Login with: email{admin.username ? <> or username <span className="font-mono font-semibold text-paper">{admin.username}</span></> : ''}
+          </p>
+
           <div className="mt-3 flex flex-wrap items-center gap-3">
             <div className="bg-paper/10 rounded-lg px-3.5 py-2 font-mono text-sm">{admin.email}</div>
             <div className="flex items-center gap-2 bg-chalk/95 text-board rounded-lg px-3.5 py-2 font-mono text-sm font-bold">

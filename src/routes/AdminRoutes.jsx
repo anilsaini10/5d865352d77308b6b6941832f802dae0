@@ -20,32 +20,41 @@ import HelpPage from '../features/admin/help/HelpPage.jsx'
 import AcademicCalendarPage from '../features/admin/calendar/AcademicCalendarPage.jsx'
 import TeacherAvailabilityPage from '../features/admin/availability/TeacherAvailabilityPage.jsx'
 import NotificationsPage from '../features/admin/notifications/NotificationsPage.jsx'
+import PlansPage from '../features/admin/billing/PlansPage.jsx'
+import SubscriptionsPage from '../features/admin/billing/SubscriptionsPage.jsx'
+import { EntitlementsProvider } from '../features/admin/billing/EntitlementsContext.jsx'
+import LockedModal from '../features/admin/billing/components/LockedModal.jsx'
 
 export default function AdminRoutes() {
   return (
-    <Routes>
-      <Route path="/" element={<AdminDashboardPage />} />
-      <Route path="/classes" element={<ClassesPage />} />
-      <Route path="/subjects" element={<SubjectsPage />} />
-      <Route path="/students" element={<StudentsPage />} />
-      <Route path="/teachers" element={<TeachersPage />} />
-      <Route path="/teachers/:teacherId" element={<TeacherDetailPage />} />
-      <Route path="/staff" element={<StaffPage />} />
-      <Route path="/timetable" element={<TimetablePage />} />
-      <Route path="/exams" element={<ExamsPage />} />
-      <Route path="/exams/:examId" element={<ExamDetailPage />} />
-      <Route path="/attendance" element={<AttendanceReportPage />} />
-      <Route path="/attendance/:classId" element={<ClassAttendancePage />} />
-      <Route path="/teacher-attendance" element={<TeacherAttendancePage />} />
-      <Route path="/leave" element={<LeavePage />} />
-      <Route path="/announcements" element={<AnnouncementsPage />} />
-      <Route path="/events" element={<EventsPage />} />
-      <Route path="/notifications" element={<NotificationsPage />} />
-      <Route path="/school" element={<SchoolSettingsPage />} />
-      <Route path="/help" element={<HelpPage />} />
-      <Route path="/academic-calendar" element={<AcademicCalendarPage />} />
-      <Route path="/teacher-availability" element={<TeacherAvailabilityPage />} />
-      <Route path="*" element={<Navigate to="/" replace />} />
-    </Routes>
+    <EntitlementsProvider>
+      <Routes>
+        <Route path="/" element={<AdminDashboardPage />} />
+        <Route path="/classes" element={<ClassesPage />} />
+        <Route path="/subjects" element={<SubjectsPage />} />
+        <Route path="/students" element={<StudentsPage />} />
+        <Route path="/teachers" element={<TeachersPage />} />
+        <Route path="/teachers/:teacherId" element={<TeacherDetailPage />} />
+        <Route path="/staff" element={<StaffPage />} />
+        <Route path="/timetable" element={<TimetablePage />} />
+        <Route path="/exams" element={<ExamsPage />} />
+        <Route path="/exams/:examId" element={<ExamDetailPage />} />
+        <Route path="/attendance" element={<AttendanceReportPage />} />
+        <Route path="/attendance/:classId" element={<ClassAttendancePage />} />
+        <Route path="/teacher-attendance" element={<TeacherAttendancePage />} />
+        <Route path="/leave" element={<LeavePage />} />
+        <Route path="/announcements" element={<AnnouncementsPage />} />
+        <Route path="/events" element={<EventsPage />} />
+        <Route path="/notifications" element={<NotificationsPage />} />
+        <Route path="/school" element={<SchoolSettingsPage />} />
+        <Route path="/help" element={<HelpPage />} />
+        <Route path="/academic-calendar" element={<AcademicCalendarPage />} />
+        <Route path="/teacher-availability" element={<TeacherAvailabilityPage />} />
+        <Route path="/billing/plans" element={<PlansPage />} />
+        <Route path="/billing/subscriptions" element={<SubscriptionsPage />} />
+        <Route path="*" element={<Navigate to="/" replace />} />
+      </Routes>
+      <LockedModal />
+    </EntitlementsProvider>
   )
 }

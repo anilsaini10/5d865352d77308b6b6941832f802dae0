@@ -4,7 +4,7 @@ import { Alert, Badge, Button, Modal, inputClass } from '../../../../components/
 import { useToast } from '../../../../context/ToastContext.jsx'
 import { getErrorCode, getErrorMessage } from '../../../../api/httpClient.js'
 import { eventsApi } from '../../events/events.api.js'
-import { COLUMNS, MAX_ROWS, downloadTemplate, parseEventsFile, toPayload } from '../excel.js'
+import { COLUMNS, MAX_ROWS, checkRows, downloadTemplate, parseEventsFile, toPayload } from '../excel.js'
 
 const cell = `${inputClass} !py-1 !px-2 !text-xs`
 
@@ -47,8 +47,9 @@ export default function ImportEventsModal({ open, onClose, onImported }) {
         setRows(parsed)
         setFileName(file.name)
       }
-    } catch {
-      setError('Could not read that file. Use an .xlsx, .xls or .csv file.')
+    } catch (err) {
+      // assertSafeFile throws user-friendly messages; anything else is an unreadable file
+      setError(err?.safe ? err.message : 'Could not read that file. Use a plain .xlsx, .xls or .csv file.')
     } finally {
       setBusy('')
     }
@@ -73,8 +74,20 @@ export default function ImportEventsModal({ open, onClose, onImported }) {
     return { byIndex, valid: results.filter((r) => r.status !== 'error').length, invalid: Object.keys(byIndex).length }
   }
 
+  /** Local security/content check; shows problems on the rows and returns true when clean. Nothing is sent if it fails. */
+  const passesLocalCheck = () => {
+    const bad = checkRows(rows)
+    const count = Object.keys(bad).length
+    if (!count) return true
+    setReport({ byIndex: bad, valid: rows.length - count, invalid: count })
+    setDirty(false)
+    setError('Some rows contain unsafe or invalid content, so nothing was sent to the server. Fix the highlighted rows and try again.')
+    return false
+  }
+
   const validate = async () => {
     setError('')
+    if (!passesLocalCheck()) return
     setBusy('validate')
     try {
       const res = await eventsApi.bulk(toPayload(rows), { dryRun: true })
@@ -89,6 +102,7 @@ export default function ImportEventsModal({ open, onClose, onImported }) {
 
   const doImport = async () => {
     setError('')
+    if (!passesLocalCheck()) return
     setBusy('import')
     try {
       const res = await eventsApi.bulk(toPayload(rows))

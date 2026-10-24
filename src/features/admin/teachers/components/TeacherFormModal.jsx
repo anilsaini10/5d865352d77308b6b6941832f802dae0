@@ -10,6 +10,7 @@ import ExpertiseInput from './ExpertiseInput.jsx'
 const emptyForm = {
   name: '',
   email: '',
+  username: '',
   phone: '',
   gender: '',
   salary: '',
@@ -25,6 +26,7 @@ function formFromTeacher(t) {
   return {
     name: t.name ?? '',
     email: t.email ?? '',
+    username: t.username ?? '',
     phone: t.phone ?? '',
     gender: t.gender ?? '',
     salary: t.salary != null ? String(t.salary) : '',
@@ -70,6 +72,7 @@ export default function TeacherFormModal({ open, onClose, teacher, classes = [],
       name: form.name.trim(),
       email: form.email.trim(),
       phone: form.phone.trim(),
+      username: form.username.trim().toLowerCase() || (isEdit ? null : undefined),
       gender: form.gender,
       salary: Number(form.salary),
       qualification: form.qualification.trim(),
@@ -97,6 +100,8 @@ export default function TeacherFormModal({ open, onClose, teacher, classes = [],
       const code = getErrorCode(err)
       const message = getErrorMessage(err, isEdit ? 'Could not update teacher.' : 'Could not create teacher.')
       if (code === 'EMAIL_TAKEN') setErrors((p) => ({ ...p, email: 'This email is already in use.' }))
+      else if (code === 'USERNAME_TAKEN') setErrors((p) => ({ ...p, username: 'This username is already taken.' }))
+      else if (code === 'VALIDATION_ERROR' && message.startsWith('username:')) setErrors((p) => ({ ...p, username: message.replace(/^username:\s*/, '') }))
       else if (code === 'SECTION_ALREADY_HAS_CLASS_TEACHER') {
         setErrors((p) => ({ ...p, classTeacherSectionId: 'This section already has a class teacher.' }))
       } else setServerError(message)
@@ -120,6 +125,15 @@ export default function TeacherFormModal({ open, onClose, teacher, classes = [],
           </Field>
           <Field label="Email" required error={errors.email} hint="Used as the login ID">
             <input type="email" className={inputClass} value={form.email} onChange={set('email')} placeholder="anita@school.edu" />
+          </Field>
+          <Field label="Username" error={errors.username} hint="Optional · Saved in lowercase">
+            <input
+              className={inputClass}
+              value={form.username}
+              onChange={set('username')}
+              onBlur={() => setForm((f) => ({ ...f, username: f.username.trim().toLowerCase() }))}
+              placeholder="anita.teacher"
+            />
           </Field>
           <Field label="Phone" required error={errors.phone}>
             <input inputMode="numeric" className={inputClass} value={form.phone} onChange={set('phone')} placeholder="9876543210" />

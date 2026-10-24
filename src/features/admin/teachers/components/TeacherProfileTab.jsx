@@ -25,6 +25,7 @@ export default function TeacherProfileTab({ teacher }) {
             <Badge tone={active ? 'active' : 'inactive'}>{active ? 'Active' : 'Deleted'}</Badge>
           </Item>
           <Item label="Email (login)">{teacher.email}</Item>
+          <Item label="Username">{teacher.username || '—'}</Item>
           <Item label="Phone">{teacher.phone}</Item>
           <Item label="Gender">{teacher.gender ? enumMeta(GENDERS, teacher.gender).label : null}</Item>
           <Item label="Joining date">{formatDate(teacher.joiningDate)}</Item>

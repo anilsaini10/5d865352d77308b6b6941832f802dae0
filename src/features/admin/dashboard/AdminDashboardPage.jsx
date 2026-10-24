@@ -9,6 +9,7 @@ import { attendanceReportApi } from '../attendance/attendance.api.js'
 import { fetchAllForDate } from '../teacherAttendance/teacherAttendance.utils.js'
 import { todayInput } from '../../../utils/format.js'
 import AdSlot from '../../../components/ads/AdSlot.jsx'
+import ExpiringBanner from '../billing/components/ExpiringBanner.jsx'
 import { adminDashboardApi } from './dashboard.api.js'
 import { BarList, ChartCard, DonutChart, StackedColumns } from './components/charts.jsx'
 
@@ -96,6 +97,7 @@ export default function AdminDashboardPage() {
         <Alert>{error}</Alert>
       ) : (
         <>
+        <ExpiringBanner />
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           <StatTile icon={GraduationCap} label="Students" value={stats.studentsCount} hint="Active only" onClick={() => navigate('/students')} />
           <StatTile icon={UserSquare2} label="Teachers" value={stats.teachersCount} hint="Active only" onClick={() => navigate('/teachers')} />

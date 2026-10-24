@@ -64,7 +64,7 @@ export default function AdminsListPage() {
     return admins.filter((a) => {
       if (schoolFilter !== 'all' && a.schoolId !== schoolFilter) return false
       if (!q) return true
-      return [a.name, a.email, a.phone, a.schoolName].filter(Boolean).some((v) => v.toLowerCase().includes(q))
+      return [a.name, a.email, a.username, a.phone, a.schoolName].filter(Boolean).some((v) => v.toLowerCase().includes(q))
     })
   }, [admins, search, schoolFilter])
 
@@ -128,7 +128,7 @@ export default function AdminsListPage() {
           <input
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            placeholder="Search by name, email or school..."
+            placeholder="Search by name, email, username or school..."
             className="w-full rounded-lg border border-line bg-surface pl-10 pr-3.5 py-2.5 text-sm text-ink placeholder:text-ink/35 focus:border-board focus:ring-2 focus:ring-board/15 outline-none transition-shadow"
           />
         </div>

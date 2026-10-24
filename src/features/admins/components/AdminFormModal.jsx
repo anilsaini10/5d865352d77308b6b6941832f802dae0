@@ -3,9 +3,9 @@ import { Loader2 } from 'lucide-react'
 import { Modal, Field, inputClass } from '../../../components/ui.jsx'
 import { adminsApi } from '../admins.api.js'
 import { validateAdminForm } from '../admins.validation.js'
-import { getErrorMessage } from '../../../api/httpClient.js'
+import { getErrorCode, getErrorMessage } from '../../../api/httpClient.js'
 
-const emptyForm = { name: '', email: '', phone: '' }
+const emptyForm = { name: '', email: '', phone: '', username: '' }
 
 /**
  * `schoolId` fixes the target school (used from a school's own detail page).
@@ -25,7 +25,7 @@ export default function AdminFormModal({ open, onClose, schoolId, schools, admin
 
   useEffect(() => {
     if (open) {
-      setForm(admin ? { name: admin.name, email: admin.email, phone: admin.phone || '' } : emptyForm)
+      setForm(admin ? { name: admin.name, email: admin.email, phone: admin.phone || '', username: admin.username || '' } : emptyForm)
       setSelectedSchoolId('')
     }
     setErrors({})
@@ -56,7 +56,11 @@ export default function AdminFormModal({ open, onClose, schoolId, schools, admin
       }
       onClose()
     } catch (err) {
-      setServerError(getErrorMessage(err, isEdit ? 'Could not update admin.' : 'Could not create admin.'))
+      const code = getErrorCode(err)
+      const message = getErrorMessage(err, isEdit ? 'Could not update admin.' : 'Could not create admin.')
+      if (code === 'USERNAME_TAKEN') setErrors((p) => ({ ...p, username: 'This username is already taken.' }))
+      else if (code === 'VALIDATION_ERROR' && message.startsWith('username:')) setErrors((p) => ({ ...p, username: message.replace(/^username:\s*/, '') }))
+      else setServerError(message)
     } finally {
       setSubmitting(false)
     }
@@ -87,6 +91,16 @@ export default function AdminFormModal({ open, onClose, schoolId, schools, admin
 
         <Field label="Email" required error={errors.email}>
           <input type="email" className={inputClass} value={form.email} onChange={set('email')} placeholder="meera@school.edu" />
+        </Field>
+
+        <Field label="Username" error={errors.username} hint="Optional · Saved in lowercase">
+          <input
+            className={inputClass}
+            value={form.username}
+            onChange={set('username')}
+            onBlur={() => setForm((f) => ({ ...f, username: f.username.trim().toLowerCase() }))}
+            placeholder="meera.kapoor"
+          />
         </Field>
 
         <Field label="Phone" error={errors.phone} hint="Optional, 10-15 digits">

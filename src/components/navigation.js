@@ -1,6 +1,6 @@
 import {
   LayoutDashboard, School, Users, Layers, BookOpen, GraduationCap, UserSquare2, BriefcaseBusiness,
-  CalendarClock, ClipboardList, CalendarOff, Megaphone, CalendarDays, Bell, Settings, LifeBuoy, Inbox, CalendarRange,
+  CalendarClock, ClipboardList, CalendarOff, Megaphone, CalendarDays, Bell, Settings, LifeBuoy, Inbox, CalendarRange, Puzzle, CreditCard, Receipt, Sparkles,
 } from 'lucide-react'
 import { ROLES } from '../features/auth/roles.js'
 
@@ -13,6 +13,14 @@ export const NAV_BY_ROLE = {
         { to: '/schools', label: 'Schools', icon: School },
         { to: '/admins', label: 'Admins', icon: Users },
         { to: '/support', label: 'Support Inbox', icon: Inbox, badge: 'supportOpen' },
+      ],
+    },
+    {
+      title: 'Subscriptions',
+      items: [
+        { to: '/features', label: 'Features', icon: Puzzle },
+        { to: '/plans', label: 'Plans', icon: CreditCard },
+        { to: '/subscriptions', label: 'Subscriptions', icon: Receipt },
       ],
     },
   ],
@@ -48,6 +56,13 @@ export const NAV_BY_ROLE = {
         { to: '/announcements', label: 'Announcements', icon: Megaphone },
         { to: '/events', label: 'Events', icon: CalendarDays },
         { to: '/notifications', label: 'Notifications', icon: Bell },
+      ],
+    },
+    {
+      title: 'Billing',
+      items: [
+        { to: '/billing/plans', label: 'Plans & pricing', icon: Sparkles },
+        { to: '/billing/subscriptions', label: 'My subscriptions', icon: Receipt },
       ],
     },
     {

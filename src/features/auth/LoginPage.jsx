@@ -79,7 +79,7 @@ export default function LoginPage() {
       }
       navigate(location.state?.from || '/', { replace: true })
     } catch (err) {
-      setServerError(getErrorCode(err) === 'INVALID_CREDENTIALS' ? 'Incorrect email/mobile or password.' : getErrorMessage(err, 'Could not sign in. Please try again.'))
+      setServerError(getErrorCode(err) === 'INVALID_CREDENTIALS' ? 'Invalid email/username/mobile or password.' : getErrorMessage(err, 'Could not sign in. Please try again.'))
     } finally {
       setSubmitting(false)
     }
@@ -171,12 +171,12 @@ export default function LoginPage() {
               </p>
             )}
 
-            <Field label="Email or mobile number" required error={errors.identifier}>
+            <Field label="Email, username or mobile number" required error={errors.identifier}>
               <input
                 type="text"
                 value={identifier}
                 onChange={(e) => setIdentifier(e.target.value)}
-                placeholder="Email or mobile number"
+                placeholder="Enter email, username or mobile"
                 className={inputClass}
                 autoComplete="username"
                 autoFocus
