@@ -16,8 +16,9 @@ export function loadAdsense() {
   if (loader) return loader
 
   loader = new Promise((resolve, reject) => {
-    const existing = document.querySelector('script[data-adsense]')
+    const existing = document.querySelector('script[data-adsense], script[src*="adsbygoogle.js"]')
     if (existing) {
+      existing.dataset.adsense = 'true'
       resolve()
       return
     }

@@ -1,29 +1,18 @@
-import { useState } from 'react'
-import { Clock, CreditCard } from 'lucide-react'
-import { Alert, Button, Modal } from '../../../../components/ui.jsx'
-import { useToast } from '../../../../context/ToastContext.jsx'
-import { getErrorMessage } from '../../../../api/httpClient.js'
-import { billingApi } from '../billing.api.js'
+import { CreditCard, Clock } from 'lucide-react'
+import { Button, Modal } from '../../../../components/ui.jsx'
 import { formatPaise } from '../billing.constants.js'
+import useRazorpayCheckout from '../useRazorpayCheckout.js'
 
 export default function PaymentPendingModal({ subscription, onClose, onDone }) {
-  const { notify } = useToast()
-  const [paying, setPaying] = useState(false)
+  const { startCheckout, busy } = useRazorpayCheckout({
+    reloadPlans: onDone,
+    onSuccess: onClose,
+  })
 
   if (!subscription) return null
 
-  const handleDummyPay = async () => {
-    setPaying(true)
-    try {
-      await billingApi.dummyPay(subscription.id)
-      notify('Payment marked as complete.', 'success')
-      onDone()
-      onClose()
-    } catch (err) {
-      notify(getErrorMessage(err, 'Could not process payment.'), 'error')
-    } finally {
-      setPaying(false)
-    }
+  const handlePay = () => {
+    startCheckout({ action: 'COMPLETE_PAYMENT', mySubscription: subscription })
   }
 
   return (
@@ -35,7 +24,7 @@ export default function PaymentPendingModal({ subscription, onClose, onDone }) {
           </div>
           <div>
             <p className="font-semibold text-ink">Awaiting payment</p>
-            <p className="text-sm text-ink/55 mt-0.5">Your subscription will be activated once payment is confirmed by Arise.</p>
+            <p className="text-sm text-ink/55 mt-0.5">Complete payment to activate your subscription.</p>
           </div>
         </div>
 
@@ -62,13 +51,12 @@ export default function PaymentPendingModal({ subscription, onClose, onDone }) {
           <Button
             variant="primary"
             icon={CreditCard}
-            loading={paying}
-            onClick={handleDummyPay}
+            loading={busy}
+            onClick={handlePay}
             className="w-full"
           >
-            Pay ₹0 (Test payment)
+            Pay {formatPaise(subscription.price?.amount)}
           </Button>
-          <p className="text-xs text-ink/40 text-center">This is a test payment for development. Real payment gateway will be integrated later.</p>
         </div>
 
         <div className="flex justify-end">

@@ -1,23 +1,18 @@
-import { useEffect, useState } from 'react'
+import { useEffect } from 'react'
 import { CreditCard } from 'lucide-react'
 import AppShell from '../../../components/AppShell.jsx'
 import { Alert, EmptyState, PageLoader } from '../../../components/ui.jsx'
 import { useFetch } from '../../../hooks/useFetch.js'
-import { useToast } from '../../../context/ToastContext.jsx'
-import { getErrorCode, getErrorMessage } from '../../../api/httpClient.js'
-import { useEntitlements } from './EntitlementsContext.jsx'
 import { billingApi } from './billing.api.js'
 import PlanCard from './components/PlanCard.jsx'
-import PaymentPendingModal from './components/PaymentPendingModal.jsx'
+import useRazorpayCheckout from './useRazorpayCheckout.js'
 
 export default function PlansPage() {
-  const { notify } = useToast()
-  const { reload: reloadEntitlements } = useEntitlements()
   const { data: plans, loading, error, reload } = useFetch(() => billingApi.plans(), [], {
     errorMessage: 'Could not load plans.',
   })
-  const [subscribing, setSubscribing] = useState(null)
-  const [pendingSub, setPendingSub] = useState(null)
+
+  const { startCheckout, busy } = useRazorpayCheckout({ reloadPlans: reload })
 
   useEffect(() => { document.title = 'Plans & pricing' }, [])
 
@@ -29,29 +24,9 @@ export default function PlansPage() {
     return (a.sortOrder ?? 0) - (b.sortOrder ?? 0)
   })
 
-  const handleSubscribe = async (plan, planPriceId) => {
+  const handleSubscribe = (plan, planPriceId) => {
     if (plan.action === 'NONE') return
-    setSubscribing(plan.id)
-    try {
-      const sub = await billingApi.subscribe(planPriceId)
-      setPendingSub(sub)
-      reload()
-      reloadEntitlements()
-    } catch (err) {
-      const code = getErrorCode(err)
-      if (code === 'ALREADY_COVERED_BY_SCHOOL') {
-        notify('This plan is already covered by your school.', 'error')
-      } else {
-        notify(getErrorMessage(err, 'Could not subscribe.'), 'error')
-      }
-    } finally {
-      setSubscribing(null)
-    }
-  }
-
-  const handlePaymentDone = () => {
-    reload()
-    reloadEntitlements()
+    startCheckout(plan, planPriceId)
   }
 
   return (
@@ -74,7 +49,7 @@ export default function PlansPage() {
                     key={plan.id}
                     plan={plan}
                     onSubscribe={handleSubscribe}
-                    loading={subscribing === plan.id}
+                    loading={busy}
                   />
                 ))}
               </div>
@@ -91,7 +66,7 @@ export default function PlansPage() {
                     key={plan.id}
                     plan={plan}
                     onSubscribe={handleSubscribe}
-                    loading={subscribing === plan.id}
+                    loading={busy}
                   />
                 ))}
               </div>
@@ -99,12 +74,6 @@ export default function PlansPage() {
           )}
         </div>
       )}
-
-      <PaymentPendingModal
-        subscription={pendingSub}
-        onClose={() => setPendingSub(null)}
-        onDone={handlePaymentDone}
-      />
     </AppShell>
   )
 }

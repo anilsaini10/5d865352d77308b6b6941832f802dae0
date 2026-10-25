@@ -13,8 +13,12 @@ export const billingApi = {
     return httpClient.post(`${BASE}/subscribe`, { planPriceId }).then(unwrap)
   },
 
-  dummyPay(subscriptionId) {
-    return httpClient.post(`${BASE}/my-subscriptions/${subscriptionId}/dummy-pay`).then(unwrap)
+  razorpayOrder(subscriptionId) {
+    return httpClient.post(`${BASE}/my-subscriptions/${subscriptionId}/razorpay-order`).then(unwrap)
+  },
+
+  razorpayVerify(subscriptionId, payload) {
+    return httpClient.post(`${BASE}/my-subscriptions/${subscriptionId}/razorpay-verify`, payload).then(unwrap)
   },
 
   mySubscriptions(filters = {}) {
