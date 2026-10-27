@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useLayoutEffect, useRef, useState } from 'react'
 import { NavLink, useLocation } from 'react-router-dom'
 import { LogOut, KeyRound, AtSign, GraduationCap, X } from 'lucide-react'
 import { useAuth } from '../features/auth/AuthContext.jsx'
@@ -8,6 +8,14 @@ import { ROLE_LABELS, ROLES } from '../features/auth/roles.js'
 import { ConfirmDialog } from './ui.jsx'
 import { NAV_BY_ROLE } from './navigation.js'
 import { useSupportOpenCount } from '../features/support/useSupportOpenCount.js'
+
+// AppShell (and so Sidebar) remounts on every page change, which would reset the nav scroll to the top.
+let savedNavScroll = 0
+
+function isActiveItem(pathname, to, end, alsoActive) {
+  const match = (p, exact) => pathname === p || (!exact && pathname.startsWith(`${p}/`))
+  return match(to, end) || !!alsoActive?.some((p) => match(p, false))
+}
 
 export default function Sidebar({ open, onClose }) {
   const { logout, user } = useAuth()
@@ -24,6 +32,22 @@ export default function Sidebar({ open, onClose }) {
   const [firstWord = '', ...restWords] = (isAdmin ? user?.schoolName?.trim() ?? '' : '').split(/\s+/)
   const brandTitle = firstWord || 'Nougth One'
   const brandSubtitle = isAdmin ? restWords.join(' ') || 'Admin Panel' : roleLabel
+
+  const navRef = useRef(null)
+
+  // Restore the previous scroll, then make sure the active item is visible.
+  useLayoutEffect(() => {
+    const nav = navRef.current
+    if (!nav) return
+    nav.scrollTop = savedNavScroll
+    const active = nav.querySelector('[data-active="true"]')
+    if (active) {
+      const navBox = nav.getBoundingClientRect()
+      const box = active.getBoundingClientRect()
+      if (box.top < navBox.top) nav.scrollTop -= navBox.top - box.top + 8
+      else if (box.bottom > navBox.bottom) nav.scrollTop += box.bottom - navBox.bottom + 8
+    }
+  }, [pathname])
 
   return (
     <>
@@ -55,7 +79,11 @@ export default function Sidebar({ open, onClose }) {
           </button>
         </div>
 
-        <nav className="flex-1 min-h-0 overflow-y-auto px-4 mt-2 pb-3 space-y-4">
+        <nav
+          ref={navRef}
+          onScroll={(e) => { savedNavScroll = e.currentTarget.scrollTop }}
+          className="flex-1 min-h-0 overflow-y-auto px-4 mt-2 pb-3 space-y-4"
+        >
           {navGroups.map((group, i) => (
             <div key={group.title ?? i} className="space-y-1">
               {group.title && (
@@ -74,6 +102,7 @@ export default function Sidebar({ open, onClose }) {
                         : 'text-on-board/65 hover:text-on-board hover:bg-on-board/5'
                     }`
                   }
+                  data-active={isActiveItem(pathname, to, end, alsoActive)}
                 >
                   <Icon size={18} strokeWidth={2.1} />
                   {label}
