@@ -1,4 +1,5 @@
 import { Navigate, Route, Routes } from 'react-router-dom'
+import ProfilePage from '../features/auth/ProfilePage.jsx'
 import DashboardPage from '../features/dashboard/DashboardPage.jsx'
 import SchoolsListPage from '../features/schools/SchoolsListPage.jsx'
 import CreateSchoolPage from '../features/schools/CreateSchoolPage.jsx'
@@ -22,6 +23,7 @@ export default function SuperAdminRoutes() {
       <Route path="/plans" element={<PlansPage />} />
       <Route path="/plans/:planId" element={<PlanDetailPage />} />
       <Route path="/subscriptions" element={<SubscriptionsPage />} />
+      <Route path="/profile" element={<ProfilePage />} />
       <Route path="/support" element={<SupportInboxPage />} />
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>

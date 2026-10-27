@@ -1,5 +1,5 @@
 export const SUBSCRIPTION_STATUSES = [
-  { value: 'PENDING_PAYMENT', label: 'Pending payment', tone: 'amber' },
+  { value: 'PENDING_PAYMENT', label: 'Payment pending', tone: 'amber' },
   { value: 'PAYMENT_FAILED', label: 'Payment failed', tone: 'danger' },
   { value: 'UPCOMING', label: 'Upcoming', tone: 'info' },
   { value: 'ACTIVE', label: 'Active', tone: 'success' },
@@ -13,6 +13,7 @@ export const statusMeta = (value) =>
 
 export const FEATURE_STATUSES = {
   FREE: { label: 'Free', tone: 'success' },
+  TRIAL: { label: 'Trial', tone: 'info' },
   ACTIVE: { label: 'Active', tone: 'success' },
   EXPIRING_SOON: { label: 'Expiring soon', tone: 'warning' },
   PAYMENT_REQUIRED: { label: 'Payment required', tone: 'danger' },
@@ -30,9 +31,31 @@ export const ACTION_LABELS = {
 
 export const LOCK_CTA = {
   NEVER_SUBSCRIBED: { label: 'Subscribe', tone: 'primary' },
+  TRIAL_ENDED: { label: 'Subscribe', tone: 'primary' },
   EXPIRED: { label: 'Renew', tone: 'primary' },
-  PENDING_PAYMENT: { label: 'Payment pending', tone: 'amber' },
+  PENDING_PAYMENT: { label: 'Complete payment', tone: 'amber' },
 }
+
+/** Lock-panel copy per entitlement `reason`; unknown reasons fall back to the generic line. */
+export const lockMessage = (reason, name) => {
+  const what = name || 'this feature'
+  switch (reason) {
+    case 'NEVER_SUBSCRIBED': return `Subscribe to use ${what}`
+    case 'PENDING_PAYMENT': return `Complete your payment to unlock ${what}`
+    case 'EXPIRED': return 'Your plan expired — renew to continue'
+    case 'TRIAL_ENDED': return `Your free trial has ended — subscribe to keep using ${what}`
+    default: return `${name ? `${name} isn't` : "This feature isn't"} included in your current plan`
+  }
+}
+
+/** Feature groups on a school plan, in display order. */
+export const FEATURE_ROLE_GROUPS = [
+  { role: 'ADMIN', label: 'Admin' },
+  { role: 'TEACHER', label: 'Teachers' },
+  { role: 'PARENT', label: 'Parents' },
+]
+
+export const TRIAL_BANNER_KEY = 'billing.trialBanner.dismissedOn'
 
 export const PAYMENT_TONES = {
   CREATED: 'amber',

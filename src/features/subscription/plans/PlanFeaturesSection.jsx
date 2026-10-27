@@ -15,6 +15,8 @@ export default function PlanFeaturesSection({ plan, onChange }) {
   const [editing, setEditing] = useState(false)
   const [removingId, setRemovingId] = useState(null)
   const isSchool = plan.scope === 'SCHOOL'
+  const perRole = isSchool || plan.targetRoles.length > 1
+  const roleNames = plan.targetRoles.map(roleLabel).join(' / ')
 
   const remove = async (pf) => {
     setRemovingId(pf.planFeatureId)
@@ -28,14 +30,14 @@ export default function PlanFeaturesSection({ plan, onChange }) {
     }
   }
 
-  const groups = isSchool ? ROLE_OPTIONS.map((r) => ({ role: r.value, rows: plan.features.filter((f) => f.role === r.value) })).filter((g) => g.rows.length) : [{ role: plan.targetRole, rows: plan.features }]
+  const groups = perRole ? ROLE_OPTIONS.map((r) => ({ role: r.value, rows: plan.features.filter((f) => f.role === r.value) })).filter((g) => g.rows.length) : [{ role: plan.targetRoles[0], rows: plan.features }]
 
   return (
     <Card className="p-5">
       <div className="flex items-start justify-between gap-3 mb-4">
         <div>
           <h2 className="font-display text-lg font-semibold text-ink">Features in this plan</h2>
-          <p className="text-sm text-ink/55">{isSchool ? 'Choose which roles in the school get each feature.' : `Features unlocked for ${roleLabel(plan.targetRole)}s who buy this plan.`}</p>
+          <p className="text-sm text-ink/55">{isSchool ? 'Choose which roles in the school get each feature.' : `Features unlocked for ${roleNames} users who get this plan.`}</p>
         </div>
         <Button variant="secondary" icon={Pencil} onClick={() => setEditing(true)}>Edit features</Button>
       </div>
@@ -46,7 +48,7 @@ export default function PlanFeaturesSection({ plan, onChange }) {
         <div className="space-y-4">
           {groups.map((g) => (
             <div key={g.role}>
-              {isSchool && <p className="text-xs font-semibold uppercase tracking-wide text-ink/45 mb-2">{roleLabel(g.role)}</p>}
+              {perRole && <p className="text-xs font-semibold uppercase tracking-wide text-ink/45 mb-2">{roleLabel(g.role)}</p>}
               <ul className="divide-y divide-line border border-line rounded-xl">
                 {g.rows.map((f) => (
                   <li key={f.planFeatureId} className="flex items-center justify-between gap-3 px-4 py-2.5">
@@ -74,13 +76,15 @@ export default function PlanFeaturesSection({ plan, onChange }) {
 
 function FeaturePicker({ plan, onClose, onSaved }) {
   const isSchool = plan.scope === 'SCHOOL'
+  const perRole = isSchool || plan.targetRoles.length > 1
   const { data, loading, error } = useFetch(() => featuresApi.list(), [], { errorMessage: 'Could not load features.' })
   const [selected, setSelected] = useState(() => new Set(plan.features.map((f) => keyOf(f.featureId, f.role))))
   const [saving, setSaving] = useState(false)
   const [serverError, setServerError] = useState('')
 
   // Only offer features that support the role; keep already-attached ones visible so saving never drops them silently.
-  const rolesOf = (f) => (isSchool ? ROLE_OPTIONS.map((r) => r.value).filter((r) => f.roles.includes(r)) : f.roles.includes(plan.targetRole) ? [plan.targetRole] : [])
+  // School plans offer every role in the school; self plans only the plan's selected roles.
+  const rolesOf = (f) => ROLE_OPTIONS.map((r) => r.value).filter((r) => f.roles.includes(r) && (isSchool || plan.targetRoles.includes(r)))
   const attached = useMemo(() => new Set(plan.features.map((f) => f.featureId)), [plan.features])
   const rows = useMemo(
     () => (data ?? []).filter((f) => (f.isActive || attached.has(f.id)) && rolesOf(f).length > 0),
@@ -93,7 +97,7 @@ function FeaturePicker({ plan, onClose, onSaved }) {
   const save = async () => {
     setServerError('')
     const features = []
-    rows.forEach((f) => rolesOf(f).forEach((r) => selected.has(keyOf(f.id, r)) && features.push(isSchool ? { featureId: f.id, role: r } : { featureId: f.id })))
+    rows.forEach((f) => rolesOf(f).forEach((r) => selected.has(keyOf(f.id, r)) && features.push(perRole ? { featureId: f.id, role: r } : { featureId: f.id })))
     setSaving(true)
     try {
       onSaved(await plansApi.setFeatures(plan.id, features))
@@ -105,9 +109,9 @@ function FeaturePicker({ plan, onClose, onSaved }) {
   }
 
   return (
-    <Modal open onClose={saving ? () => {} : onClose} wide title="Edit plan features" subtitle={isSchool ? 'Tick the roles that get each feature' : `Features for ${roleLabel(plan.targetRole)}s`}>
+    <Modal open onClose={saving ? () => {} : onClose} wide title="Edit plan features" subtitle={perRole ? 'Tick the roles that get each feature' : `Features for ${roleNames} users`}>
       {loading ? <p className="text-sm text-ink/50 py-6 text-center">Loading features…</p> : error ? <Alert>{error}</Alert> : rows.length === 0 ? (
-        <p className="text-sm text-ink/55 py-6 text-center">No features support {isSchool ? 'these roles' : `the ${roleLabel(plan.targetRole)} role`} yet. Create one on the Features page first.</p>
+        <p className="text-sm text-ink/55 py-6 text-center">No features support {isSchool ? 'these roles' : `the selected roles (${roleNames})`} yet. Create one on the Features page first.</p>
       ) : (
         <ul className="divide-y divide-line border border-line rounded-xl max-h-[50vh] overflow-y-auto">
           {rows.map((f) => (
@@ -120,7 +124,7 @@ function FeaturePicker({ plan, onClose, onSaved }) {
                 {rolesOf(f).map((r) => (
                   <label key={r} className={`inline-flex items-center gap-1.5 rounded-lg border px-2.5 py-1 text-xs font-semibold cursor-pointer ${selected.has(keyOf(f.id, r)) ? 'border-board bg-board/10 text-board' : 'border-line text-ink/60'}`}>
                     <input type="checkbox" className="accent-board" checked={selected.has(keyOf(f.id, r))} onChange={() => toggle(keyOf(f.id, r))} aria-label={`${f.name} for ${roleLabel(r)}`} />
-                    {isSchool ? roleLabel(r) : 'Include'}
+                    {perRole ? roleLabel(r) : 'Include'}
                   </label>
                 ))}
               </div>

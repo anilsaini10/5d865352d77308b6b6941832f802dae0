@@ -1,10 +1,12 @@
 import {
   LayoutDashboard, School, Users, Layers, BookOpen, GraduationCap, UserSquare2, BriefcaseBusiness,
-  CalendarClock, ClipboardList, CalendarOff, Megaphone, CalendarDays, Bell, Settings, LifeBuoy, Inbox, CalendarRange, Puzzle, CreditCard, Receipt, Sparkles,
+  CalendarClock, ClipboardList, CalendarOff, Megaphone, CalendarDays, Bell, Settings, LifeBuoy, Inbox, CalendarRange, Puzzle, KeyRound, CreditCard, Receipt, Sparkles,
 } from 'lucide-react'
 import { ROLES } from '../features/auth/roles.js'
 
 // Sidebar entries per role, grouped. A group with no title renders without a heading.
+// An item may set `feature: '<entitlement key>'` to show a lock icon while that feature is locked
+// (pair it with <AppShell feature="<key>"> on the page itself).
 export const NAV_BY_ROLE = {
   [ROLES.SUPER_ADMIN]: [
     {
@@ -48,7 +50,10 @@ export const NAV_BY_ROLE = {
     },
     {
       title: 'Requests',
-      items: [{ to: '/leave', label: 'Leave requests', icon: CalendarOff }],
+      items: [
+        { to: '/leave', label: 'Leave requests', icon: CalendarOff },
+        { to: '/recovery-requests', label: 'Recovery Requests', icon: KeyRound, badge: 'recoveryPending' },
+      ],
     },
     {
       title: 'Communication',

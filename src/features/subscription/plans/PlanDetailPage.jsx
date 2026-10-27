@@ -5,7 +5,8 @@ import AppShell from '../../../components/AppShell.jsx'
 import { Alert, Badge, Button, Card, PageLoader } from '../../../components/ui.jsx'
 import { useFetch } from '../../../hooks/useFetch.js'
 import { plansApi } from '../subscription.api.js'
-import { planTypeLabel, roleLabel, scopeLabel } from '../subscription.constants.js'
+import { planTypeLabel, scopeLabel } from '../subscription.constants.js'
+import { RoleChips, TrialBadge } from './PlanBadges.jsx'
 import PlanFormModal from './PlanFormModal.jsx'
 import PlanFeaturesSection from './PlanFeaturesSection.jsx'
 import PlanPricesSection from './PlanPricesSection.jsx'
@@ -32,8 +33,10 @@ export default function PlanDetailPage() {
               <Badge tone={plan.isActive ? 'success' : 'inactive'}>{plan.isActive ? 'Active' : 'Inactive'}</Badge>
               <Badge tone={plan.scope === 'SCHOOL' ? 'info' : 'neutral'}>{scopeLabel(plan.scope)} plan</Badge>
               <Badge tone="primary">{planTypeLabel(plan.planType)}</Badge>
-              <Badge tone="neutral">For {roleLabel(plan.targetRole)}</Badge>
+              <RoleChips roles={plan.targetRoles} />
+              {plan.trial && <TrialBadge trial={plan.trial} />}
             </div>
+            {plan.trial && <p className="text-sm text-ink/70 mb-3">Everyone this plan is offered to gets its features free during the trial, then must pay.</p>}
             {plan.description && <p className="text-sm text-ink/70 mb-3">{plan.description}</p>}
             <dl className="grid sm:grid-cols-3 gap-4 text-sm">
               <div><dt className="text-xs uppercase tracking-wide text-ink/45 font-semibold">Offered to</dt><dd className="text-ink mt-0.5">{plan.school?.name ?? 'All schools'}</dd></div>

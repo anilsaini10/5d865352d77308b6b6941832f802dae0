@@ -1,13 +1,12 @@
-import { useLayoutEffect, useRef, useState } from 'react'
+import { useLayoutEffect, useRef } from 'react'
 import { NavLink, useLocation } from 'react-router-dom'
-import { LogOut, KeyRound, AtSign, GraduationCap, X } from 'lucide-react'
+import { UserRound, GraduationCap, Lock, X } from 'lucide-react'
 import { useAuth } from '../features/auth/AuthContext.jsx'
-import ChangePasswordModal from '../features/auth/components/ChangePasswordModal.jsx'
-import UsernameModal from '../features/auth/components/UsernameModal.jsx'
 import { ROLE_LABELS, ROLES } from '../features/auth/roles.js'
-import { ConfirmDialog } from './ui.jsx'
 import { NAV_BY_ROLE } from './navigation.js'
+import { useFeature } from '../features/admin/billing/EntitlementsContext.jsx'
 import { useSupportOpenCount } from '../features/support/useSupportOpenCount.js'
+import { useRecoveryPendingCount } from '../features/admin/recovery/useRecoveryPendingCount.js'
 
 // AppShell (and so Sidebar) remounts on every page change, which would reset the nav scroll to the top.
 let savedNavScroll = 0
@@ -17,17 +16,23 @@ function isActiveItem(pathname, to, end, alsoActive) {
   return match(to, end) || !!alsoActive?.some((p) => match(p, false))
 }
 
+/** Lock icon for a nav item whose paid feature the admin can't use. */
+function NavLock({ feature }) {
+  const { hasAccess } = useFeature(feature)
+  return hasAccess ? null : <Lock size={14} className="ml-auto opacity-60" aria-label="Locked" />
+}
+
 export default function Sidebar({ open, onClose }) {
-  const { logout, user } = useAuth()
+  const { user } = useAuth()
   const { pathname } = useLocation()
-  const [changePasswordOpen, setChangePasswordOpen] = useState(false)
-  const [usernameOpen, setUsernameOpen] = useState(false)
-  const [logoutOpen, setLogoutOpen] = useState(false)
   const role = user?.role ?? ROLES.SUPER_ADMIN
   const navGroups = NAV_BY_ROLE[role] ?? []
   const roleLabel = ROLE_LABELS[role]
   const isAdmin = role === ROLES.ADMIN
-  const badges = { supportOpen: useSupportOpenCount(role === ROLES.SUPER_ADMIN) }
+  const badges = {
+    supportOpen: useSupportOpenCount(role === ROLES.SUPER_ADMIN),
+    recoveryPending: useRecoveryPendingCount(role === ROLES.ADMIN),
+  }
   // Admin: first word of the school name on top, the rest below ("Admin Panel" if it's a single word).
   const [firstWord = '', ...restWords] = (isAdmin ? user?.schoolName?.trim() ?? '' : '').split(/\s+/)
   const brandTitle = firstWord || 'Nougth One'
@@ -89,7 +94,7 @@ export default function Sidebar({ open, onClose }) {
               {group.title && (
                 <p className="px-3.5 pb-1 text-[11px] uppercase tracking-wider text-on-board/40 font-semibold">{group.title}</p>
               )}
-              {group.items.map(({ to, label, icon: Icon, end, badge, alsoActive }) => (
+              {group.items.map(({ to, label, icon: Icon, end, badge, alsoActive, feature }) => (
                 <NavLink
                   key={to}
                   to={to}
@@ -106,6 +111,7 @@ export default function Sidebar({ open, onClose }) {
                 >
                   <Icon size={18} strokeWidth={2.1} />
                   {label}
+                  {feature && <NavLock feature={feature} />}
                   {badge && badges[badge] > 0 && (
                     <span className="ml-auto min-w-[1.375rem] text-center rounded-full bg-chalk text-board text-[11px] font-bold px-1.5 py-0.5" aria-label={`${badges[badge]} open`}>
                       {badges[badge] > 99 ? '99+' : badges[badge]}
@@ -118,49 +124,22 @@ export default function Sidebar({ open, onClose }) {
         </nav>
 
         <div className="mx-4 mb-4 mt-2 p-3 rounded-2xl bg-board-dark border border-on-board/10 shadow-card">
-          <div className="flex items-center gap-3 px-1 pb-3 mb-2 border-b border-on-board/10">
-            <div className="w-9 h-9 rounded-full bg-chalk text-board font-display font-semibold flex items-center justify-center text-sm shrink-0">
-              {user?.name?.[0] ?? 'S'}
-            </div>
-            <div className="min-w-0">
-              <p className="text-sm font-semibold truncate">{user?.name}</p>
-              <p className="text-xs text-on-board/60 truncate">{roleLabel}</p>
-            </div>
-          </div>
-          <button
-            onClick={() => setUsernameOpen(true)}
-            className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-sm font-medium text-on-board/75 hover:text-on-board hover:bg-on-board/10 transition-colors"
+          <NavLink
+            to="/profile"
+            onClick={onClose}
+            data-paywall-allow
+            className={({ isActive }) =>
+              `w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-sm font-medium transition-colors ${
+                isActive ? 'bg-on-board/10 text-on-board' : 'text-on-board/75 hover:text-on-board hover:bg-on-board/10'
+              }`
+            }
           >
-            <AtSign size={17} />
-            Username
-          </button>
-          <button
-            onClick={() => setChangePasswordOpen(true)}
-            className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-sm font-medium text-on-board/75 hover:text-on-board hover:bg-on-board/10 transition-colors"
-          >
-            <KeyRound size={17} />
-            Change password
-          </button>
-          <button
-            onClick={() => setLogoutOpen(true)}
-            className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-sm font-medium text-on-board/75 hover:text-on-board hover:bg-coral/80 transition-colors"
-          >
-            <LogOut size={17} />
-            Log out
-          </button>
+            <UserRound size={17} />
+            Profile
+          </NavLink>
         </div>
       </aside>
 
-      <ChangePasswordModal open={changePasswordOpen} onClose={() => setChangePasswordOpen(false)} />
-      <UsernameModal open={usernameOpen} onClose={() => setUsernameOpen(false)} />
-      <ConfirmDialog
-        open={logoutOpen}
-        onClose={() => setLogoutOpen(false)}
-        onConfirm={logout}
-        title="Log out?"
-        message="Are you sure you want to log out of your account?"
-        confirmLabel="Log out"
-      />
     </>
   )
 }

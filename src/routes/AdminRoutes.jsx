@@ -20,9 +20,12 @@ import HelpPage from '../features/admin/help/HelpPage.jsx'
 import AcademicCalendarPage from '../features/admin/calendar/AcademicCalendarPage.jsx'
 import TeacherAvailabilityPage from '../features/admin/availability/TeacherAvailabilityPage.jsx'
 import NotificationsPage from '../features/admin/notifications/NotificationsPage.jsx'
+import RecoveryRequestsPage from '../features/admin/recovery/RecoveryRequestsPage.jsx'
+import ProfilePage from '../features/auth/ProfilePage.jsx'
 import PlansPage from '../features/admin/billing/PlansPage.jsx'
 import SubscriptionsPage from '../features/admin/billing/SubscriptionsPage.jsx'
 import { EntitlementsProvider } from '../features/admin/billing/EntitlementsContext.jsx'
+import PaywallGate from '../features/admin/billing/components/PaywallGate.jsx'
 import LockedModal from '../features/admin/billing/components/LockedModal.jsx'
 
 export default function AdminRoutes() {
@@ -43,6 +46,8 @@ export default function AdminRoutes() {
         <Route path="/attendance/:classId" element={<ClassAttendancePage />} />
         <Route path="/teacher-attendance" element={<TeacherAttendancePage />} />
         <Route path="/leave" element={<LeavePage />} />
+        <Route path="/recovery-requests" element={<RecoveryRequestsPage />} />
+        <Route path="/profile" element={<ProfilePage />} />
         <Route path="/announcements" element={<AnnouncementsPage />} />
         <Route path="/events" element={<EventsPage />} />
         <Route path="/notifications" element={<NotificationsPage />} />
@@ -54,6 +59,7 @@ export default function AdminRoutes() {
         <Route path="/billing/subscriptions" element={<SubscriptionsPage />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
+      <PaywallGate />
       <LockedModal />
     </EntitlementsProvider>
   )

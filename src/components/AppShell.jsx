@@ -5,11 +5,17 @@ import SectionSwitch from './SectionSwitch.jsx'
 import { useAuth } from '../features/auth/AuthContext.jsx'
 import { ROLES } from '../features/auth/roles.js'
 import NotificationBell from '../features/admin/notifications/NotificationBell.jsx'
+import TrialBanner from '../features/admin/billing/components/TrialBanner.jsx'
+import FeatureStatusTag from '../features/admin/billing/components/FeatureStatusTag.jsx'
+import LockPanel from '../features/admin/billing/components/LockPanel.jsx'
+import { useFeature } from '../features/admin/billing/EntitlementsContext.jsx'
 
-export default function AppShell({ title, subtitle, actions, onBack, children }) {
+/** `feature`: entitlement key of a paid page — locked admins see the lock panel instead of `children`. */
+export default function AppShell({ title, subtitle, actions, onBack, feature, children }) {
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const { user } = useAuth()
   const showBell = user?.role === ROLES.ADMIN
+  const gate = useFeature(feature)
 
   return (
     <div className="min-h-screen flex">
@@ -36,7 +42,10 @@ export default function AppShell({ title, subtitle, actions, onBack, children })
                 </button>
               )}
               <div className="min-w-0">
-                <h1 className="font-display text-xl sm:text-2xl font-semibold text-ink truncate">{title}</h1>
+                <div className="flex items-center gap-2.5 min-w-0">
+                  <h1 className="font-display text-xl sm:text-2xl font-semibold text-ink truncate">{title}</h1>
+                  {feature && <FeatureStatusTag featureKey={feature} />}
+                </div>
                 {subtitle && <p className="text-sm text-ink/55 mt-0.5 truncate">{subtitle}</p>}
               </div>
             </div>
@@ -51,7 +60,8 @@ export default function AppShell({ title, subtitle, actions, onBack, children })
 
         <main className="flex-1 px-5 sm:px-8 py-6 max-w-[1400px] w-full mx-auto">
           {showBell && <SectionSwitch />}
-          {children}
+          {showBell && <TrialBanner />}
+          {gate.hasAccess ? children : <LockPanel name={gate.name} reason={gate.reason ?? 'NEVER_SUBSCRIBED'} availableIn={gate.availableIn} />}
         </main>
       </div>
     </div>

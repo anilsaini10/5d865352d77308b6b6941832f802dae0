@@ -10,9 +10,10 @@ import { useDebouncedValue } from '../../../hooks/useDebouncedValue.js'
 import { schoolsApi } from '../../schools/schools.api.js'
 import { plansApi } from '../subscription.api.js'
 import { describeError } from '../subscription.errors.js'
-import { PLAN_TYPES, ROLE_OPTIONS, SCOPES, planTypeLabel, priceRange, roleLabel, scopeLabel } from '../subscription.constants.js'
+import { PLAN_TYPES, ROLE_OPTIONS, SCOPES, planTypeLabel, priceRange, scopeLabel } from '../subscription.constants.js'
 import PlanFormModal from './PlanFormModal.jsx'
 import ActiveSwitch from './ActiveSwitch.jsx'
+import { RoleChips, TrialBadge } from './PlanBadges.jsx'
 
 const ALL = 'ALL'
 
@@ -42,8 +43,8 @@ export default function PlansPage() {
   )
   useEffect(() => { document.title = 'Plans' }, [])
   const all = data ?? []
-  const items = role === ALL ? all : all.filter((p) => p.targetRole === role)
-  const tabs = [{ value: ALL, label: 'All', count: all.length }, ...ROLE_OPTIONS.map((r) => ({ value: r.value, label: r.label, count: all.filter((p) => p.targetRole === r.value).length }))]
+  const items = role === ALL ? all : all.filter((p) => p.targetRoles?.includes(role))
+  const tabs = [{ value: ALL, label: 'All', count: all.length }, ...ROLE_OPTIONS.map((r) => ({ value: r.value, label: r.label, count: all.filter((p) => p.targetRoles?.includes(r.value)).length }))]
   const hasFilters = !!(scope || planType || isActive || schoolId || debounced)
 
   const patchRow = (updated) => setData((d) => d && d.map((p) => (p.id === updated.id ? updated : p)))
@@ -116,7 +117,7 @@ export default function PlansPage() {
           }
         >
           <Table className={loading ? 'opacity-60' : ''}>
-            <THead><Th>Code</Th><Th>Name</Th><Th>Scope</Th><Th>Type</Th><Th>Target</Th><Th>School</Th><Th>Price</Th><Th>Subscribers</Th><Th>Active</Th><Th /></THead>
+            <THead><Th>Code</Th><Th>Name</Th><Th>Scope</Th><Th>Type</Th><Th>Roles</Th><Th>Trial</Th><Th>School</Th><Th>Price</Th><Th>Subscribers</Th><Th>Active</Th><Th /></THead>
             <tbody>
               {items.map((p) => (
                 <Tr key={p.id} className="cursor-pointer hover:bg-line/20" onClick={() => navigate(`/plans/${p.id}`)}>
@@ -124,7 +125,8 @@ export default function PlansPage() {
                   <Td className="font-semibold text-ink min-w-[140px]">{p.name}</Td>
                   <Td><Badge tone={p.scope === 'SCHOOL' ? 'info' : 'neutral'}>{scopeLabel(p.scope)}</Badge></Td>
                   <Td>{planTypeLabel(p.planType)}</Td>
-                  <Td>{roleLabel(p.targetRole)}</Td>
+                  <Td><RoleChips roles={p.targetRoles} /></Td>
+                  <Td>{p.trial ? <TrialBadge trial={p.trial} /> : <span className="text-ink/35">—</span>}</Td>
                   <Td className="whitespace-nowrap">{p.school?.name ?? <span className="text-ink/45">All schools</span>}</Td>
                   <Td className="whitespace-nowrap">{priceRange(p.prices)}</Td>
                   <Td className="whitespace-nowrap">{p.liveSubscriptions} live / {p.totalSubscriptions}</Td>
