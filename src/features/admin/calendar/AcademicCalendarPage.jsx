@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react'
-import { CalendarRange, FileSpreadsheet, Plus } from 'lucide-react'
+import { FileSpreadsheet, Plus } from 'lucide-react'
 import AppShell from '../../../components/AppShell.jsx'
 import { Alert, Button, ConfirmDialog, Field, PageLoader, Tabs, inputClass, selectClass } from '../../../components/ui.jsx'
 import { useFetch } from '../../../hooks/useFetch.js'
@@ -165,9 +165,8 @@ export default function AcademicCalendarPage() {
           {view === 'month' && <MonthView months={months} index={effectiveIndex} onIndex={setMonthIndex} dayMap={dayMap} selected={selected} onSelect={pickDay} />}
           {view === 'list' && <ListView months={months} onEdit={openEdit} onDelete={setDeleting} />}
 
-          {view !== 'list' && <DayPanel day={selected} entries={dayMap.get(selected)} onAdd={openAdd} onEdit={openEdit} onDelete={setDeleting} />}
-          {view !== 'list' && !selected && (
-            <p className="mt-4 flex items-center gap-2 text-sm text-ink/50"><CalendarRange size={15} /> Select a date to see or add its entries.</p>
+          {view !== 'list' && selected && (
+            <DayPanel day={selected} entries={dayMap.get(selected)} onAdd={openAdd} onEdit={openEdit} onDelete={setDeleting} onClose={() => setSelected('')} />
           )}
         </>
       ) : null}

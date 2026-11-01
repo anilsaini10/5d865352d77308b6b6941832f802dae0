@@ -1,8 +1,8 @@
 import { useEffect, useState } from 'react'
-import { X } from 'lucide-react'
 import { Alert, Badge, Button, PageLoader } from '../../../../components/ui.jsx'
 import { getErrorMessage } from '../../../../api/httpClient.js'
 import { formatDate, formatDateTime } from '../../../../utils/format.js'
+import Drawer from './Drawer.jsx'
 import { billingApi } from '../billing.api.js'
 import { formatPaise, statusMeta, PAYMENT_TONES } from '../billing.constants.js'
 
@@ -16,7 +16,7 @@ function Row({ label, children }) {
   )
 }
 
-export default function SubscriptionDetailDrawer({ subscription, onClose, onCancel }) {
+export default function SubscriptionDetailDrawer({ subscription, onClose, onCancel, onPay, payBusy }) {
   const [s, setS] = useState(subscription)
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(true)
@@ -31,36 +31,31 @@ export default function SubscriptionDetailDrawer({ subscription, onClose, onCanc
     return () => { cancelled = true }
   }, [subscription.id])
 
-  useEffect(() => {
-    const onKey = (e) => e.key === 'Escape' && onClose()
-    document.addEventListener('keydown', onKey)
-    return () => document.removeEventListener('keydown', onKey)
-  }, [onClose])
-
   const meta = statusMeta(s.status)
   const canCancel = s.status === 'PENDING_PAYMENT'
 
   return (
-    <div className="fixed inset-0 z-50 flex justify-end">
-      <div className="absolute inset-0 bg-ink/40 backdrop-blur-[2px]" onClick={onClose} aria-hidden="true" />
-      <aside role="dialog" aria-modal="true" aria-label="Subscription details" className="relative w-full max-w-xl h-full bg-paper border-l border-line shadow-pop overflow-y-auto animate-rise">
-        <header className="sticky top-0 z-10 bg-paper/95 backdrop-blur border-b border-line px-6 py-4 flex items-start justify-between gap-3">
-          <div className="min-w-0">
-            <h2 className="font-display text-xl font-semibold text-ink truncate">{s.plan?.name}</h2>
-            <div className="mt-1 flex flex-wrap items-center gap-2">
-              <Badge tone={meta.tone}>{meta.label}</Badge>
-              {s.daysLeft != null && <span className="text-xs text-ink/55">{s.daysLeft} day{s.daysLeft === 1 ? '' : 's'} left</span>}
-            </div>
+    <Drawer
+      label="Subscription details"
+      onClose={onClose}
+      header={
+        <>
+          <h2 className="font-display text-xl font-semibold text-ink truncate">{s.plan?.name}</h2>
+          <div className="mt-1 flex flex-wrap items-center gap-2">
+            <Badge tone={meta.tone}>{meta.label}</Badge>
+            {s.daysLeft != null && <span className="text-xs text-ink/55">{s.daysLeft} day{s.daysLeft === 1 ? '' : 's'} left</span>}
           </div>
-          <button onClick={onClose} className="text-ink/50 hover:text-ink hover:bg-line/40 rounded-full p-1.5" aria-label="Close"><X size={18} /></button>
-        </header>
-
-        <div className="px-6 py-5 space-y-6">
+        </>
+      }
+    >
           <Alert>{error}</Alert>
           {loading && <PageLoader className="py-2" />}
 
           {canCancel && (
-            <Button variant="danger-ghost" onClick={() => onCancel(s)}>Cancel subscription</Button>
+            <div className="flex flex-wrap gap-2">
+              <Button onClick={() => onPay(s)} loading={payBusy}>Complete payment</Button>
+              <Button variant="danger-ghost" onClick={() => onCancel(s)} disabled={payBusy}>Cancel subscription</Button>
+            </div>
           )}
 
           <section>
@@ -105,8 +100,6 @@ export default function SubscriptionDetailDrawer({ subscription, onClose, onCanc
               <p className="text-sm text-ink/50">No payments recorded.</p>
             )}
           </section>
-        </div>
-      </aside>
-    </div>
+    </Drawer>
   )
 }

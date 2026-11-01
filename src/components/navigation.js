@@ -1,10 +1,13 @@
 import {
   LayoutDashboard, School, Users, Layers, BookOpen, GraduationCap, UserSquare2, BriefcaseBusiness,
-  CalendarClock, ClipboardList, CalendarOff, Megaphone, CalendarDays, Bell, Settings, LifeBuoy, Inbox, CalendarRange, Puzzle, CreditCard, Receipt, Sparkles,
+  CalendarClock, ClipboardList, CalendarOff, Megaphone, CalendarDays, Bell, Settings, LifeBuoy, Inbox, CalendarRange, Puzzle, KeyRound, CreditCard, Receipt, Sparkles,
+  BarChart3, ShieldCheck, UserPlus, LogOut, Home, ShieldHalf,
 } from 'lucide-react'
 import { ROLES } from '../features/auth/roles.js'
 
 // Sidebar entries per role, grouped. A group with no title renders without a heading.
+// An item may set `feature: '<entitlement key>'` to show a lock icon while that feature is locked
+// (pair it with <AppShell feature="<key>"> on the page itself).
 export const NAV_BY_ROLE = {
   [ROLES.SUPER_ADMIN]: [
     {
@@ -13,6 +16,7 @@ export const NAV_BY_ROLE = {
         { to: '/schools', label: 'Schools', icon: School },
         { to: '/admins', label: 'Admins', icon: Users },
         { to: '/support', label: 'Support Inbox', icon: Inbox, badge: 'supportOpen' },
+        { to: '/roles', label: 'Roles', icon: ShieldCheck },
       ],
     },
     {
@@ -44,11 +48,22 @@ export const NAV_BY_ROLE = {
         { to: '/students', label: 'Students', icon: GraduationCap, alsoActive: ['/attendance'] },
         { to: '/teachers', label: 'Teachers', icon: UserSquare2, alsoActive: ['/teacher-attendance', '/teacher-availability'] },
         { to: '/staff', label: 'Staff', icon: BriefcaseBusiness },
+        { to: '/role-accounts', label: 'Role Accounts', icon: UserPlus },
+        { to: '/role-permissions', label: 'Role Permissions', icon: ShieldHalf },
+      ],
+    },
+    {
+      title: 'Analytics',
+      items: [
+        { to: '/analytics', label: 'Analytics', icon: BarChart3, alsoActive: ['/analytics'] },
       ],
     },
     {
       title: 'Requests',
-      items: [{ to: '/leave', label: 'Leave requests', icon: CalendarOff }],
+      items: [
+        { to: '/leave', label: 'Leave requests', icon: CalendarOff },
+        { to: '/recovery-requests', label: 'Recovery Requests', icon: KeyRound, badge: 'recoveryPending' },
+      ],
     },
     {
       title: 'Communication',
@@ -70,6 +85,13 @@ export const NAV_BY_ROLE = {
       items: [
         { to: '/school', label: 'School settings', icon: Settings },
         { to: '/help', label: 'Help & Support', icon: LifeBuoy },
+      ],
+    },
+  ],
+  [ROLES.STAFF]: [
+    {
+      items: [
+        { to: '/', label: 'Home', icon: Home, end: true },
       ],
     },
   ],

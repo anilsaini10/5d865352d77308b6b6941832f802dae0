@@ -7,17 +7,21 @@ import { useAuth } from './features/auth/AuthContext.jsx'
 import { ROLES } from './features/auth/roles.js'
 import { PageLoader } from './components/ui.jsx'
 
-// Each role's pages ship as their own chunk — an admin never downloads the super admin console and vice versa.
 const SuperAdminRoutes = lazy(() => import('./routes/SuperAdminRoutes.jsx'))
 const AdminRoutes = lazy(() => import('./routes/AdminRoutes.jsx'))
+const StaffRoutes = lazy(() => import('./routes/StaffRoutes.jsx'))
 
-// Same URL space for both roles — the signed-in user's role picks which
-// route tree (and sidebar) is mounted.
 function RoleRoutes() {
   const { user } = useAuth()
   return (
     <Suspense fallback={<PageLoader className="min-h-screen" />}>
-      {user?.role === ROLES.ADMIN ? <AdminRoutes /> : <SuperAdminRoutes />}
+      {user?.role === ROLES.ADMIN ? (
+        <AdminRoutes />
+      ) : user?.role === ROLES.STAFF ? (
+        <StaffRoutes customRoleKey={user?.customRole?.key} />
+      ) : (
+        <SuperAdminRoutes />
+      )}
     </Suspense>
   )
 }

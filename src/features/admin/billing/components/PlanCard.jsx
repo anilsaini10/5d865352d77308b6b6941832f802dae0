@@ -1,60 +1,30 @@
-import { useState } from 'react'
-import { Check, Crown } from 'lucide-react'
+import { Crown } from 'lucide-react'
 import { Badge, Button } from '../../../../components/ui.jsx'
-import { ACTION_LABELS, formatPaise, statusMeta } from '../billing.constants.js'
-import { formatDate } from '../../../../utils/format.js'
+import { formatDate, formatDay } from '../../../../utils/format.js'
+import { formatPaise, statusMeta } from '../billing.constants.js'
+import PlanFeatureList from './PlanFeatureList.jsx'
+import { TrialBadge, trialSubtitle } from './TrialInfo.jsx'
 
-const ROLE_LABELS = { PARENT: 'Parents', TEACHER: 'Teachers', ADMIN: 'Admins' }
-const ROLE_ORDER = ['PARENT', 'TEACHER', 'ADMIN']
+const days = (n) => `${n} day${n === 1 ? '' : 's'} left`
 
-function FeaturesByRole({ features }) {
-  const grouped = {}
-  for (const f of features) {
-    const role = f.role ?? 'ADMIN'
-    if (!grouped[role]) grouped[role] = []
-    grouped[role].push(f)
-  }
-
+function StatusLine({ sub }) {
+  const meta = statusMeta(sub.status)
+  let note = null
+  if (sub.status === 'ACTIVE' || sub.status === 'EXPIRING_SOON') note = sub.daysLeft != null ? days(sub.daysLeft) : null
+  else if (sub.status === 'UPCOMING') note = `Starts ${formatDate(sub.startDate)}`
   return (
-    <div className="space-y-3">
-      {ROLE_ORDER.filter((r) => grouped[r]).map((role) => (
-        <div key={role}>
-          <p className="text-xs font-semibold text-ink/50 uppercase tracking-wide mb-1">{ROLE_LABELS[role] ?? role} get</p>
-          <ul className="space-y-1">
-            {grouped[role].map((f) => (
-              <li key={f.planFeatureId} className="flex items-start gap-2 text-sm text-ink/70">
-                <Check size={14} className="mt-0.5 text-success shrink-0" />
-                <span>{f.name}</span>
-              </li>
-            ))}
-          </ul>
-        </div>
-      ))}
+    <div className="mt-3 flex flex-wrap items-center gap-2">
+      <Badge tone={meta.tone}>{meta.label}</Badge>
+      {note && <span className="text-xs text-ink/50">{note}</span>}
     </div>
   )
 }
 
-function FlatFeatures({ features }) {
-  return (
-    <ul className="space-y-1">
-      {features.map((f) => (
-        <li key={f.planFeatureId} className="flex items-start gap-2 text-sm text-ink/70">
-          <Check size={14} className="mt-0.5 text-success shrink-0" />
-          <span>{f.name}</span>
-        </li>
-      ))}
-    </ul>
-  )
-}
-
-export default function PlanCard({ plan, onSubscribe, loading }) {
-  const [selectedPriceId, setSelectedPriceId] = useState(plan.prices[0]?.id ?? '')
-  const selectedPrice = plan.prices.find((p) => p.id === selectedPriceId) ?? plan.prices[0]
-  const { mySubscription, upcomingRenewal, action, coveredBySchool } = plan
-  const meta = mySubscription ? statusMeta(mySubscription.status) : null
-  const isSchool = plan.scope === 'SCHOOL'
+export default function PlanCard({ plan, onOpen, onCancel }) {
+  const { mySubscription, upcomingRenewal, action, onTrial, startingFrom } = plan
   const isAddon = plan.planType === 'ADDON'
-  const disabled = action === 'NONE' || loading
+  const subtitle = trialSubtitle(plan)
+  const buttonLabel = { SUBSCRIBE: onTrial ? 'Subscribe now' : 'Subscribe', RENEW: 'Renew', COMPLETE_PAYMENT: 'Complete payment' }[action]
 
   return (
     <div className="bg-surface border border-line rounded-2xl shadow-card flex flex-col">
@@ -67,71 +37,34 @@ export default function PlanCard({ plan, onSubscribe, loading }) {
             </div>
             {plan.description && <p className="text-sm text-ink/55 mt-0.5">{plan.description}</p>}
           </div>
-          {isSchool && <Crown size={18} className="text-chalk shrink-0 mt-1" />}
+          {plan.scope === 'SCHOOL' && <Crown size={18} className="text-chalk shrink-0 mt-1" />}
         </div>
 
-        {meta && (
-          <div className="mt-3 flex flex-wrap items-center gap-2">
-            <Badge tone={meta.tone}>{meta.label}</Badge>
-            {mySubscription.endDate && (
-              <span className="text-xs text-ink/50">
-                Ends {formatDate(mySubscription.endDate)}
-                {mySubscription.daysLeft != null && ` · ${mySubscription.daysLeft} day${mySubscription.daysLeft === 1 ? '' : 's'} left`}
-              </span>
-            )}
-          </div>
-        )}
-        {upcomingRenewal && (
-          <p className="text-xs text-info mt-1.5">Renewal starts on {formatDate(upcomingRenewal.startDate)}</p>
-        )}
+        <p className="mt-3 text-sm text-ink/60">
+          {startingFrom
+            ? <>Starting at <span className="text-2xl font-semibold text-ink">{formatPaise(startingFrom.amount)}</span> / {startingFrom.duration}</>
+            : 'No price set'}
+        </p>
+
+        <div className="mt-2 flex flex-wrap items-center gap-2"><TrialBadge plan={plan} /></div>
+        {subtitle && <p className="text-xs text-info mt-1.5">{subtitle}</p>}
+        {mySubscription && <StatusLine sub={mySubscription} />}
+        {upcomingRenewal && <p className="text-xs text-info mt-1.5">Renewal starts {formatDate(upcomingRenewal.startDate)}</p>}
       </div>
 
-      <div className="px-5 pb-4 flex-1">
-        {isSchool ? <FeaturesByRole features={plan.features} /> : <FlatFeatures features={plan.features} />}
-      </div>
+      <div className="px-5 pb-4 flex-1"><PlanFeatureList plan={plan} /></div>
 
-      <div className="border-t border-line px-5 py-4 space-y-3">
-        {plan.prices.length > 1 && (
-          <div className="flex flex-wrap gap-2">
-            {plan.prices.map((p) => (
-              <button
-                key={p.id}
-                type="button"
-                onClick={() => setSelectedPriceId(p.id)}
-                className={`px-3 py-1.5 rounded-lg text-sm font-semibold border transition-colors ${
-                  p.id === selectedPriceId
-                    ? 'bg-board text-on-board border-board'
-                    : 'bg-surface text-ink/60 border-line hover:border-board/30'
-                }`}
-              >
-                {p.duration ?? p.label}
-              </button>
-            ))}
-          </div>
+      <div className="border-t border-line px-5 py-4 flex items-center justify-between gap-3">
+        {action === 'NONE' || !buttonLabel ? (
+          <p className="text-xs text-success">{plan.coveredBySchool || action === 'NONE' ? 'Included by your school' : ''}</p>
+        ) : (
+          <>
+            {action === 'COMPLETE_PAYMENT'
+              ? <button type="button" onClick={() => onCancel(plan)} className="text-sm font-semibold text-coral hover:underline">Cancel</button>
+              : <span />}
+            <Button variant={action === 'COMPLETE_PAYMENT' ? 'secondary' : 'primary'} onClick={() => onOpen(plan)}>{buttonLabel}</Button>
+          </>
         )}
-
-        <div className="flex items-end justify-between gap-3">
-          <div>
-            <span className="text-2xl font-semibold text-ink">{formatPaise(selectedPrice?.amount)}</span>
-            <span className="text-sm text-ink/45 ml-1">/ {selectedPrice?.duration ?? selectedPrice?.label}</span>
-          </div>
-          <Button
-            disabled={disabled}
-            loading={loading}
-            variant={action === 'COMPLETE_PAYMENT' ? 'secondary' : 'primary'}
-            onClick={() => onSubscribe(plan, selectedPriceId)}
-          >
-            {ACTION_LABELS[action] ?? 'Subscribe'}
-          </Button>
-        </div>
-
-        {action === 'RENEW' && mySubscription?.status === 'ACTIVE' && (
-          <p className="text-xs text-ink/45">The new period starts after your current plan ends.</p>
-        )}
-        {action === 'RENEW' && mySubscription?.status === 'EXPIRED' && (
-          <p className="text-xs text-ink/45">Starts on payment confirmation.</p>
-        )}
-        {coveredBySchool && <p className="text-xs text-success">This plan is covered by your school.</p>}
       </div>
     </div>
   )

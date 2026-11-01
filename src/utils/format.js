@@ -5,6 +5,19 @@ export function formatDate(value) {
   return new Date(value).toLocaleDateString(LOCALE, { day: '2-digit', month: 'short', year: 'numeric' })
 }
 
+/** "YYYY-MM-DD" (a date-only value, no timezone) → "01 Nov 2026". Never goes through new Date(string), which can shift by a day. */
+export function formatDay(value) {
+  if (!value) return '—'
+  const [y, m, d] = String(value).slice(0, 10).split('-').map(Number)
+  return new Date(y, m - 1, d).toLocaleDateString(LOCALE, { day: '2-digit', month: 'short', year: 'numeric' })
+}
+
+/** "YYYY-MM-DD" plus n days, as "YYYY-MM-DD" (calendar math in UTC, so no DST/timezone drift). */
+export function addDays(value, n) {
+  const [y, m, d] = String(value).slice(0, 10).split('-').map(Number)
+  return new Date(Date.UTC(y, m - 1, d + n)).toISOString().slice(0, 10)
+}
+
 export function formatDateTime(value) {
   if (!value) return '—'
   return new Date(value).toLocaleString(LOCALE, { day: '2-digit', month: 'short', year: 'numeric', hour: 'numeric', minute: '2-digit' })

@@ -5,11 +5,12 @@ import Pagination from '../../../components/Pagination.jsx'
 import { AsyncContent, Badge, Button, Card, ConfirmDialog, EmptyState, Table, Tabs, THead, Th, Tr, Td } from '../../../components/ui.jsx'
 import { useFetch } from '../../../hooks/useFetch.js'
 import { useToast } from '../../../context/ToastContext.jsx'
-import { getErrorMessage } from '../../../api/httpClient.js'
 import { formatDate } from '../../../utils/format.js'
 import { useEntitlements } from './EntitlementsContext.jsx'
 import { billingApi } from './billing.api.js'
-import { SUBSCRIPTION_STATUSES, formatPaise, statusMeta } from './billing.constants.js'
+import { formatPaise, statusMeta } from './billing.constants.js'
+import { friendlyBillingError } from './billing.errors.js'
+import useRazorpayCheckout from './useRazorpayCheckout.js'
 import SubscriptionDetailDrawer from './components/SubscriptionDetailDrawer.jsx'
 
 const ALL = ''
@@ -35,8 +36,14 @@ export default function SubscriptionsPage() {
 
   const tabs = [
     { value: ALL, label: 'All' },
-    ...SUBSCRIPTION_STATUSES.map((s) => ({ value: s.value, label: s.label })),
+    { value: 'ACTIVE', label: 'Active' },
+    { value: 'UPCOMING', label: 'Upcoming' },
+    { value: 'PENDING_PAYMENT', label: 'Pending' },
+    { value: 'EXPIRED', label: 'Expired' },
   ]
+
+  const { startCheckout, busy: payBusy } = useRazorpayCheckout({ reloadPlans: reload, onSuccess: () => setOpen(null) })
+  const pay = (s) => startCheckout({ action: 'COMPLETE_PAYMENT', mySubscription: s, name: s.plan?.name }, s.planPriceId ?? s.price?.id)
 
   const handleCancel = async () => {
     try {
@@ -46,7 +53,8 @@ export default function SubscriptionsPage() {
       reloadEntitlements()
       setOpen(null)
     } catch (err) {
-      notify(getErrorMessage(err, 'Could not cancel subscription.'), 'error')
+      notify(friendlyBillingError(err, 'Could not cancel subscription.'), 'error')
+      reload()
     }
   }
 
@@ -75,8 +83,8 @@ export default function SubscriptionsPage() {
               <Th>For</Th>
               <Th>Duration</Th>
               <Th>Amount</Th>
-              <Th>Status</Th>
               <Th>Period</Th>
+              <Th>Status</Th>
               <Th>Paid by</Th>
               <Th />
             </THead>
@@ -87,22 +95,23 @@ export default function SubscriptionsPage() {
                 return (
                   <Tr key={s.id} className="cursor-pointer hover:bg-line/20" onClick={() => setOpen(s)}>
                     <Td className="whitespace-nowrap font-semibold text-ink">{s.plan.name}</Td>
-                    <Td className="whitespace-nowrap text-xs">{s.subscriberType === 'SCHOOL' ? 'School' : 'My account'}</Td>
+                    <Td className="whitespace-nowrap text-xs">{s.subscriberType === 'SCHOOL' ? 'School' : 'Me'}</Td>
                     <Td className="whitespace-nowrap">{s.price.duration}</Td>
                     <Td className="whitespace-nowrap">{formatPaise(s.price.amount)}</Td>
+                    <Td className="whitespace-nowrap text-xs">
+                      {s.startDate ? `${formatDate(s.startDate)} – ${formatDate(s.endDate)}` : '—'}
+                    </Td>
                     <Td>
                       <Badge tone={meta.tone}>{meta.label}</Badge>
                       {s.daysLeft != null && <span className="block text-xs text-ink/50 mt-0.5">{s.daysLeft}d left</span>}
                     </Td>
-                    <Td className="whitespace-nowrap text-xs">
-                      {s.startDate ? `${formatDate(s.startDate)} – ${formatDate(s.endDate)}` : '—'}
-                    </Td>
                     <Td className="whitespace-nowrap text-xs">{s.paidBy?.name ?? '—'}</Td>
                     <Td onClick={(e) => e.stopPropagation()}>
                       {canCancel && (
-                        <Button size="sm" variant="danger-ghost" onClick={() => setCancelTarget(s)}>
-                          Cancel
-                        </Button>
+                        <div className="flex items-center gap-1 whitespace-nowrap">
+                          <Button size="sm" onClick={() => pay(s)} disabled={payBusy}>Complete payment</Button>
+                          <Button size="sm" variant="danger-ghost" onClick={() => setCancelTarget(s)} disabled={payBusy}>Cancel</Button>
+                        </div>
                       )}
                     </Td>
                   </Tr>
@@ -128,6 +137,8 @@ export default function SubscriptionsPage() {
           subscription={open}
           onClose={() => setOpen(null)}
           onCancel={(s) => { setCancelTarget(s); setOpen(null) }}
+          onPay={pay}
+          payBusy={payBusy}
         />
       )}
 

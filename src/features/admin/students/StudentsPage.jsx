@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Plus, GraduationCap, Eye, Pencil, Trash2, RotateCcw } from 'lucide-react'
+import { Plus, GraduationCap, Eye, Pencil, Trash2, RotateCcw, FileDown, CreditCard } from 'lucide-react'
 import AppShell from '../../../components/AppShell.jsx'
 import Pagination from '../../../components/Pagination.jsx'
 import {
@@ -32,6 +32,8 @@ import ResetPasswordDialog from '../../../components/ResetPasswordDialog.jsx'
 import { usersApi } from '../users/users.api.js'
 import StudentDetailsModal from './components/StudentDetailsModal.jsx'
 import StudentCreatedBanner from './components/StudentCreatedBanner.jsx'
+import StudentIdCard from './components/StudentIdCard.jsx'
+import { printPdf } from '../../../utils/pdf.js'
 
 const PAGE_SIZE = 15
 
@@ -51,6 +53,7 @@ export default function StudentsPage() {
   const [deleteTarget, setDeleteTarget] = useState(null)
   const [resetTarget, setResetTarget] = useState(null)
   const [justCreated, setJustCreated] = useState(null)
+  const [idCardStudent, setIdCardStudent] = useState(null)
 
   const { data, loading, error, reload } = useFetch(
     () =>
@@ -126,6 +129,39 @@ export default function StudentsPage() {
     }
   }
 
+  const exportPdf = () => {
+    printPdf({
+      title: 'Students List',
+      subtitle: `Total: ${data?.total ?? students.length} students${classId ? ` · ${classes.find((c) => c.id === classId)?.name || ''}` : ''}`,
+      fileName: 'Students_List',
+      columns: [
+        { key: 'admissionNo', label: 'Adm. No.', width: '10%' },
+        { key: 'name', label: 'Student Name', width: '22%' },
+        { key: 'class', label: 'Class', width: '14%' },
+        { key: 'rollNo', label: 'Roll', width: '6%', align: 'center' },
+        { key: 'gender', label: 'Gender', width: '8%' },
+        { key: 'parentName', label: 'Parent', width: '18%' },
+        { key: 'parentPhone', label: 'Phone', width: '12%' },
+        { key: 'attendance', label: 'Attendance', width: '10%', align: 'right' },
+      ],
+      rows: students.map((s) => ({
+        admissionNo: s.admissionNo,
+        name: s.name,
+        class: s.className + (s.sectionName ? ` – ${s.sectionName}` : ''),
+        rollNo: s.rollNo ?? '—',
+        gender: enumMeta(GENDERS, s.gender).label,
+        parentName: s.parentName,
+        parentPhone: s.parentPhone,
+        attendance: s.attendancePercentage != null ? `${Number(s.attendancePercentage).toFixed(1)}%` : '—',
+      })),
+      summary: [
+        { label: 'Total Students', value: data?.total ?? students.length },
+        { label: 'Status', value: status === 'ALL' ? 'All' : status === 'ACTIVE' ? 'Active' : 'Deleted' },
+      ],
+      footerNote: 'This is a computer-generated document.',
+    })
+  }
+
   const sections = classId ? sectionsOf(classId) : []
 
   const emptyState =
@@ -146,7 +182,12 @@ export default function StudentsPage() {
     <AppShell
       title="Students"
       subtitle="Admissions, class placement and parent contacts"
-      actions={<Button icon={Plus} onClick={() => setFormModal({})}>Add student</Button>}
+      actions={
+        <div className="flex items-center gap-2">
+          {students.length > 0 && <Button variant="secondary" size="sm" icon={FileDown} onClick={exportPdf}>Export PDF</Button>}
+          <Button icon={Plus} onClick={() => setFormModal({})}>Add student</Button>
+        </div>
+      }
     >
       <div className="flex flex-col sm:flex-row gap-3 mb-5">
         <SearchInput value={search} onChange={withPageReset(setSearch)} placeholder="Search by name, admission no. or parent..." />
@@ -229,6 +270,7 @@ export default function StudentsPage() {
                     <Td className="text-right whitespace-nowrap">
                       <div className="inline-flex items-center gap-1">
                         <IconButton icon={Eye} label={`View ${s.name}`} onClick={() => setViewing(s)} />
+                        <IconButton icon={CreditCard} label={`ID Card ${s.name}`} tone="primary" onClick={() => setIdCardStudent(s)} />
                         <IconButton icon={Pencil} label={`Edit ${s.name}`} tone="primary" onClick={() => setFormModal({ student: s })} />
                         {inactive ? (
                           <Button size="sm" variant="secondary" icon={RotateCcw} onClick={() => restoreStudent(s)}>
@@ -274,6 +316,10 @@ export default function StudentsPage() {
       )}
 
       <ResetPasswordDialog target={resetTarget} request={usersApi.resetPassword} onClose={() => setResetTarget(null)} onStale={reload} />
+
+      {idCardStudent && (
+        <StudentIdCard student={idCardStudent} onClose={() => setIdCardStudent(null)} />
+      )}
 
       <ConfirmDialog
         open={!!deleteTarget}

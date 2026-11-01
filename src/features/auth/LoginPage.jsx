@@ -1,20 +1,20 @@
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { Navigate, useLocation, useNavigate } from 'react-router-dom'
-import { Eye, EyeOff, ArrowRight, Loader2 } from 'lucide-react'
+import { Eye, EyeOff, ArrowRight, Loader2, Search } from 'lucide-react'
 import { useAuth } from './AuthContext.jsx'
+import { authApi } from './auth.api.js'
 import { validateLoginForm } from './auth.validation.js'
 import { getErrorCode, getErrorMessage } from '../../api/httpClient.js'
 import { inputClass, Field } from '../../components/ui.jsx'
+import { useDebouncedValue } from '../../hooks/useDebouncedValue.js'
 import { PANEL_ROLES, ROLE_LABELS, ROLES } from './roles.js'
 
 import titleLogo from '../../../src/assets/images/baner_title.png'
-// 👇 attached classroom image ko is path par save karo (ya apna path/name daal do)
 import brandLogo from '../../../src/assets/images/logo_title_transparent.png'
 import classroomImg from '../../../src/assets/images/login-classroom.jpg'
 
 const LAST_ROLE_KEY = 'panel_last_role'
 
-// Left panel ki story: ek school din ke 3 moments
 const STORY = [
   {
     time: '8:05 am',
@@ -42,6 +42,91 @@ function readLastRole() {
   }
 }
 
+function SchoolSearch({ value, onChange, error }) {
+  const [query, setQuery] = useState('')
+  const [results, setResults] = useState([])
+  const [searching, setSearching] = useState(false)
+  const [open, setOpen] = useState(false)
+  const debouncedQuery = useDebouncedValue(query.trim(), 400)
+  const containerRef = useRef(null)
+
+  useEffect(() => {
+    if (!debouncedQuery) { setResults([]); return }
+    let cancelled = false
+    setSearching(true)
+    authApi.searchSchools(debouncedQuery)
+      .then((data) => {
+        if (!cancelled) setResults(data?.items ?? data ?? [])
+      })
+      .catch(() => {
+        if (!cancelled) setResults([])
+      })
+      .finally(() => {
+        if (!cancelled) setSearching(false)
+      })
+    return () => { cancelled = true }
+  }, [debouncedQuery])
+
+  useEffect(() => {
+    const onClick = (e) => {
+      if (containerRef.current && !containerRef.current.contains(e.target)) setOpen(false)
+    }
+    document.addEventListener('mousedown', onClick)
+    return () => document.removeEventListener('mousedown', onClick)
+  }, [])
+
+  const select = (school) => {
+    onChange(school)
+    setQuery(school.name)
+    setOpen(false)
+  }
+
+  return (
+    <Field label="School" required error={error}>
+      <div ref={containerRef} className="relative">
+        <div className="relative">
+          <Search size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-ink/35" />
+          <input
+            type="text"
+            value={value ? (query || value.name) : query}
+            onChange={(e) => {
+              setQuery(e.target.value)
+              if (value) onChange(null)
+              setOpen(true)
+            }}
+            onFocus={() => setOpen(true)}
+            placeholder="Search for your school"
+            className={`${inputClass} pl-10`}
+            autoComplete="off"
+          />
+          {searching && <Loader2 size={15} className="absolute right-3.5 top-1/2 -translate-y-1/2 text-ink/35 animate-spin" />}
+        </div>
+        {open && results.length > 0 && (
+          <ul className="absolute z-10 mt-1 w-full bg-paper border border-line rounded-lg shadow-pop max-h-48 overflow-y-auto">
+            {results.map((s) => (
+              <li key={s.id}>
+                <button
+                  type="button"
+                  onClick={() => select(s)}
+                  className="w-full text-left px-3.5 py-2.5 text-sm hover:bg-line/40 transition-colors"
+                >
+                  <span className="font-semibold text-ink">{s.name}</span>
+                  {s.city && <span className="text-ink/50 ml-1.5">· {s.city}</span>}
+                </button>
+              </li>
+            ))}
+          </ul>
+        )}
+        {open && debouncedQuery && !searching && results.length === 0 && (
+          <div className="absolute z-10 mt-1 w-full bg-paper border border-line rounded-lg shadow-pop px-3.5 py-3 text-sm text-ink/50">
+            No schools found
+          </div>
+        )}
+      </div>
+    </Field>
+  )
+}
+
 export default function LoginPage() {
   const { login, user, ready } = useAuth()
   const navigate = useNavigate()
@@ -51,9 +136,12 @@ export default function LoginPage() {
   const [identifier, setIdentifier] = useState('')
   const [password, setPassword] = useState('')
   const [showPassword, setShowPassword] = useState(false)
+  const [school, setSchool] = useState(null)
   const [errors, setErrors] = useState({})
   const [serverError, setServerError] = useState('')
   const [submitting, setSubmitting] = useState(false)
+
+  const needsSchool = role === ROLES.STAFF
 
   if (ready && user) {
     return <Navigate to={location.state?.from || '/'} replace />
@@ -66,20 +154,24 @@ export default function LoginPage() {
     setServerError('')
 
     const validationErrors = validateLoginForm({ identifier, password })
+    if (needsSchool && !school) validationErrors.school = 'Select your school.'
     setErrors(validationErrors)
     if (Object.keys(validationErrors).length > 0) return
 
     setSubmitting(true)
     try {
-      await login(identifier.trim(), password, role)
+      await login(identifier.trim(), password, role, needsSchool ? school.id : undefined)
       try {
         localStorage.setItem(LAST_ROLE_KEY, role)
       } catch {
-        // storage unavailable — the role just won't be remembered
+        // storage unavailable
       }
       navigate(location.state?.from || '/', { replace: true })
     } catch (err) {
-      setServerError(getErrorCode(err) === 'INVALID_CREDENTIALS' ? 'Invalid email/username/mobile or password.' : getErrorMessage(err, 'Could not sign in. Please try again.'))
+      const code = getErrorCode(err)
+      if (code === 'INVALID_CREDENTIALS') setServerError('Invalid email/username/mobile or password.')
+      else if (code === 'ROLE_INACTIVE') setServerError(getErrorMessage(err, 'Your role has been disabled. Please contact your school admin.'))
+      else setServerError(getErrorMessage(err, 'Could not sign in. Please try again.'))
     } finally {
       setSubmitting(false)
     }
@@ -87,17 +179,14 @@ export default function LoginPage() {
 
   return (
     <div className="min-h-screen grid lg:grid-cols-[1.1fr_1fr]">
-      {/* ───────────── LEFT: storytelling panel (desktop only) ───────────── */}
       <aside className="relative hidden lg:flex flex-col justify-end overflow-hidden bg-board text-on-board">
         <img
           src={classroomImg}
           alt="Students studying together in a bright classroom"
           className="absolute inset-0 w-full h-full object-cover"
         />
-        {/* readable text ke liye dark overlay */}
         <div className="absolute inset-0 bg-gradient-to-t from-board via-board/85 to-board/30" />
 
-        {/* Transparent logo, top-left. The PNG has wide empty margins, so it's cropped to the artwork. */}
         <div className="absolute z-10 top-10 left-12 xl:left-16 overflow-hidden" style={{ width: '16rem', height: '4.7rem' }}>
           <img
             src={brandLogo}
@@ -130,7 +219,6 @@ export default function LoginPage() {
         </div>
       </aside>
 
-      {/* ───────────── RIGHT: login form ───────────── */}
       <main className="flex items-center justify-center px-4 py-10">
         <div className="w-full max-w-sm">
           <div className="flex flex-col items-center text-center mb-8">
@@ -147,7 +235,7 @@ export default function LoginPage() {
             <div
               role="radiogroup"
               aria-label="Sign in as"
-              className="grid grid-cols-2 gap-1 p-1 bg-paper border border-line rounded-xl"
+              className={`grid gap-1 p-1 bg-paper border border-line rounded-xl ${PANEL_ROLES.length === 3 ? 'grid-cols-3' : 'grid-cols-2'}`}
             >
               {PANEL_ROLES.map((r) => (
                 <button
@@ -155,7 +243,7 @@ export default function LoginPage() {
                   type="button"
                   role="radio"
                   aria-checked={role === r}
-                  onClick={() => setRole(r)}
+                  onClick={() => { setRole(r); setServerError('') }}
                   className={`py-2 rounded-lg text-sm font-semibold transition-colors ${
                     role === r ? 'bg-board text-on-board shadow-card' : 'text-ink/60 hover:text-ink'
                   }`}
@@ -171,6 +259,10 @@ export default function LoginPage() {
               </p>
             )}
 
+            {needsSchool && (
+              <SchoolSearch value={school} onChange={setSchool} error={errors.school} />
+            )}
+
             <Field label="Email, username or mobile number" required error={errors.identifier}>
               <input
                 type="text"
@@ -179,7 +271,7 @@ export default function LoginPage() {
                 placeholder="Enter email, username or mobile"
                 className={inputClass}
                 autoComplete="username"
-                autoFocus
+                autoFocus={!needsSchool}
               />
             </Field>
 

@@ -17,7 +17,7 @@ export function describeError(err, fallback) {
     case 'FEATURE_NOT_FOUND': return 'One of the selected features no longer exists. Reload and try again.'
     case 'FEATURE_ROLE_MISMATCH': return `${base}${d?.featureKey ? ` (feature "${d.featureKey}" does not support role ${d.role}).` : ''}`
     case 'PLAN_CODE_EXISTS': return 'A plan with this code already exists. Choose a different code.'
-    case 'PLAN_IN_USE': return 'This plan already has subscriptions. Deactivate it instead (scope and target role cannot change either).'
+    case 'PLAN_IN_USE': return base
     case 'PLAN_PRICE_IN_USE': return 'This price has already been bought. Deactivate it instead.'
     case 'DUPLICATE_PRICE': return 'This plan already has a price for that duration. Edit it, or pick a different duration.'
     case 'SCHOOL_NOT_FOUND': return 'The selected school no longer exists.'
