@@ -3,7 +3,7 @@ import { useLocation, useNavigate, useParams } from 'react-router-dom'
 import { useForm, FormProvider } from 'react-hook-form'
 import { ArrowLeft, Loader2, UserPlus } from 'lucide-react'
 import AppShell from '../../components/AppShell.jsx'
-import { EmptyState, ConfirmDialog } from '../../components/ui.jsx'
+import { EmptyState, ConfirmDialog, Tabs } from '../../components/ui.jsx'
 import ResetPasswordDialog from '../../components/ResetPasswordDialog.jsx'
 import { schoolsApi } from './schools.api.js'
 import { adminsApi } from '../admins/admins.api.js'
@@ -14,12 +14,22 @@ import SchoolFieldSections from './components/SchoolFieldSections.jsx'
 import AdminFormModal from '../admins/components/AdminFormModal.jsx'
 import AdminsTable from '../admins/components/AdminsTable.jsx'
 import AdminCreatedBanner from '../admins/components/AdminCreatedBanner.jsx'
+import SchoolPermissionsTab from './components/SchoolPermissionsTab.jsx'
+import SchoolRolePermissionsTab from './components/SchoolRolePermissionsTab.jsx'
+
+const TABS = [
+  { value: 'details', label: 'Details' },
+  { value: 'permissions', label: 'Permissions' },
+  { value: 'rolePermissions', label: 'Role permissions' },
+]
 
 export default function SchoolDetailPage() {
   const { schoolId } = useParams()
   const navigate = useNavigate()
   const location = useLocation()
   const { notify } = useToast()
+
+  const [tab, setTab] = useState('details')
 
   const [school, setSchool] = useState(null)
   const [admins, setAdmins] = useState([])
@@ -161,79 +171,90 @@ export default function SchoolDetailPage() {
       subtitle={`Code ${school.code} · School details and admin accounts`}
       onBack={() => navigate('/schools')}
     >
-      <FormProvider {...form}>
-        <form onSubmit={form.handleSubmit(onSubmit)} className="max-w-3xl mb-8">
-          <SchoolFieldSections mode="edit" code={school.code} />
+      <div className="overflow-x-auto mb-5">
+        <Tabs options={TABS} value={tab} onChange={setTab} />
+      </div>
 
-          {serverError && (
-            <p className="text-sm text-coral font-medium bg-coral/8 border border-coral/20 rounded-lg px-3 py-2 mb-4">
-              {serverError}
-            </p>
+      {tab === 'details' && (
+        <>
+          <FormProvider {...form}>
+            <form onSubmit={form.handleSubmit(onSubmit)} className="max-w-3xl mb-8">
+              <SchoolFieldSections mode="edit" code={school.code} />
+
+              {serverError && (
+                <p className="text-sm text-coral font-medium bg-coral/8 border border-coral/20 rounded-lg px-3 py-2 mb-4">
+                  {serverError}
+                </p>
+              )}
+
+              <div className="flex justify-end">
+                <button
+                  type="submit"
+                  disabled={saving}
+                  className="flex items-center gap-1.5 px-5 py-2.5 rounded-lg text-sm font-semibold bg-board hover:bg-board-light disabled:opacity-60 text-paper transition-colors"
+                >
+                  {saving && <Loader2 size={15} className="animate-spin" />}
+                  Save changes
+                </button>
+              </div>
+            </form>
+          </FormProvider>
+
+          {justCreated && (
+            <AdminCreatedBanner
+              admin={justCreated.admin}
+              defaultPassword={justCreated.defaultPassword}
+              onDismiss={() => setJustCreated(null)}
+            />
           )}
 
-          <div className="flex justify-end">
+          <div className="flex items-center justify-between mb-3">
+            <h2 className="font-display text-lg font-semibold text-ink">Admins</h2>
             <button
-              type="submit"
-              disabled={saving}
-              className="flex items-center gap-1.5 px-5 py-2.5 rounded-lg text-sm font-semibold bg-board hover:bg-board-light disabled:opacity-60 text-paper transition-colors"
+              onClick={() => setAdminModal({})}
+              className="flex items-center gap-1.5 bg-board hover:bg-board-light text-paper text-sm font-semibold px-4 py-2.5 rounded-lg transition-colors"
             >
-              {saving && <Loader2 size={15} className="animate-spin" />}
-              Save changes
+              <UserPlus size={16} /> Add admin
             </button>
           </div>
-        </form>
-      </FormProvider>
 
-      {justCreated && (
-        <AdminCreatedBanner
-          admin={justCreated.admin}
-          defaultPassword={justCreated.defaultPassword}
-          onDismiss={() => setJustCreated(null)}
-        />
+          <div className="bg-surface border border-line rounded-2xl shadow-card overflow-hidden">
+            <AdminsTable
+              admins={admins}
+              onEdit={(admin) => setAdminModal({ admin })}
+              onToggleStatus={(admin) => (admin.isActive ? setDeactivateTarget(admin) : reactivate(admin))}
+              onResetPassword={(admin) => setResetTarget({ id: admin.id, name: admin.name })}
+            />
+          </div>
+
+          <AdminFormModal
+            open={!!adminModal}
+            onClose={() => setAdminModal(null)}
+            schoolId={schoolId}
+            admin={adminModal?.admin}
+            onSaved={handleAdminSaved}
+          />
+
+          <ResetPasswordDialog
+            target={resetTarget}
+            request={(adminId) => adminsApi.resetPassword(schoolId, adminId)}
+            onClose={() => setResetTarget(null)}
+            onStale={() => adminsApi.list(schoolId).then(setAdmins).catch(() => {})}
+          />
+
+          <ConfirmDialog
+            open={!!deactivateTarget}
+            onClose={() => setDeactivateTarget(null)}
+            onConfirm={confirmDeactivate}
+            title="Deactivate this admin?"
+            message={`"${deactivateTarget?.name}" will be signed out immediately and won't be able to log in until reactivated. This doesn't delete their account.`}
+            confirmLabel="Deactivate"
+          />
+        </>
       )}
 
-      <div className="flex items-center justify-between mb-3">
-        <h2 className="font-display text-lg font-semibold text-ink">Admins</h2>
-        <button
-          onClick={() => setAdminModal({})}
-          className="flex items-center gap-1.5 bg-board hover:bg-board-light text-paper text-sm font-semibold px-4 py-2.5 rounded-lg transition-colors"
-        >
-          <UserPlus size={16} /> Add admin
-        </button>
-      </div>
-
-      <div className="bg-surface border border-line rounded-2xl shadow-card overflow-hidden">
-        <AdminsTable
-          admins={admins}
-          onEdit={(admin) => setAdminModal({ admin })}
-          onToggleStatus={(admin) => (admin.isActive ? setDeactivateTarget(admin) : reactivate(admin))}
-          onResetPassword={(admin) => setResetTarget({ id: admin.id, name: admin.name })}
-        />
-      </div>
-
-      <AdminFormModal
-        open={!!adminModal}
-        onClose={() => setAdminModal(null)}
-        schoolId={schoolId}
-        admin={adminModal?.admin}
-        onSaved={handleAdminSaved}
-      />
-
-      <ResetPasswordDialog
-        target={resetTarget}
-        request={(adminId) => adminsApi.resetPassword(schoolId, adminId)}
-        onClose={() => setResetTarget(null)}
-        onStale={() => adminsApi.list(schoolId).then(setAdmins).catch(() => {})}
-      />
-
-      <ConfirmDialog
-        open={!!deactivateTarget}
-        onClose={() => setDeactivateTarget(null)}
-        onConfirm={confirmDeactivate}
-        title="Deactivate this admin?"
-        message={`"${deactivateTarget?.name}" will be signed out immediately and won't be able to log in until reactivated. This doesn't delete their account.`}
-        confirmLabel="Deactivate"
-      />
+      {tab === 'permissions' && <SchoolPermissionsTab schoolId={schoolId} />}
+      {tab === 'rolePermissions' && <SchoolRolePermissionsTab schoolId={schoolId} />}
     </AppShell>
   )
 }

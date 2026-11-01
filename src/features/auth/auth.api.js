@@ -2,9 +2,17 @@ import { httpClient } from '../../api/httpClient.js'
 
 export const authApi = {
   /** @returns {Promise<import('./auth.types.js').LoginResult>} */
-  login(identifier, password, role) {
+  login(identifier, password, role, schoolId) {
+    const body = { identifier, password, role }
+    if (schoolId) body.schoolId = schoolId
     return httpClient
-      .post('/auth/login', { identifier, password, role })
+      .post('/auth/login', body)
+      .then((res) => res.data.data)
+  },
+
+  searchSchools(search) {
+    return httpClient
+      .get('/auth/schools', { params: { search: search || undefined } })
       .then((res) => res.data.data)
   },
 
@@ -32,5 +40,9 @@ export const authApi = {
     return httpClient
       .patch('/auth/username', { username })
       .then((res) => res.data.data)
+  },
+
+  getPermissions() {
+    return httpClient.get('/auth/permissions').then((res) => res.data.data)
   },
 }
