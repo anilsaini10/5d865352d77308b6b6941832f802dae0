@@ -18,4 +18,16 @@ export const schoolPermissionsApi = {
   getRolePermissions(schoolId) {
     return httpClient.get(`/super-admin/schools/${schoolId}/role-permissions`).then(unwrap)
   },
+
+  getRolePermission(schoolId, roleId) {
+    return httpClient.get(`/super-admin/schools/${schoolId}/role-permissions/${roleId}`).then(unwrap)
+  },
+
+  putRolePermission(schoolId, roleId, permissions) {
+    return httpClient.put(`/super-admin/schools/${schoolId}/role-permissions/${roleId}`, { permissions }).then(unwrap)
+  },
+
+  patchRolePermission(schoolId, roleId, permissions) {
+    return httpClient.patch(`/super-admin/schools/${schoolId}/role-permissions/${roleId}`, { permissions }).then(unwrap)
+  },
 }

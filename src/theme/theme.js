@@ -15,9 +15,9 @@ export const theme = {
     line: '#E5E7EB', // borders, dividers
     'line-strong': '#D1D5DB', // scrollbar thumb, perforated edges
 
-    board: '#4F46E5', // primary brand color — buttons, sidebar, links (indigo-600)
-    'board-light': '#6366F1', // primary hover (indigo-500)
-    'board-dark': '#4338CA', // primary pressed / borders on primary (indigo-700)
+    board: '#011836', // primary brand color — buttons, sidebar, links
+    'board-light': '#0A2A8F', // primary hover
+    'board-dark': '#041356', // primary pressed / borders on primary
     'on-board': '#FFFFFF', // text/icons placed on primary
 
     chalk: '#F59E0B', // accent — highlights, active nav underline, passwords (amber-500)

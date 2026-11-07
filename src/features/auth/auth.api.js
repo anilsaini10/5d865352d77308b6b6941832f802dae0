@@ -2,9 +2,10 @@ import { httpClient } from '../../api/httpClient.js'
 
 export const authApi = {
   /** @returns {Promise<import('./auth.types.js').LoginResult>} */
-  login(identifier, password, role, schoolId) {
+  login(identifier, password, role, schoolId, customRoleId) {
     const body = { identifier, password, role }
     if (schoolId) body.schoolId = schoolId
+    if (customRoleId) body.customRoleId = customRoleId
     return httpClient
       .post('/auth/login', body)
       .then((res) => res.data.data)
@@ -12,7 +13,13 @@ export const authApi = {
 
   searchSchools(search) {
     return httpClient
-      .get('/auth/schools', { params: { search: search || undefined } })
+      .get('/schools', { params: { search: search || undefined } })
+      .then((res) => res.data.data)
+  },
+
+  getSchoolRoles(schoolId) {
+    return httpClient
+      .get(`/schools/${schoolId}/roles`)
       .then((res) => res.data.data)
   },
 

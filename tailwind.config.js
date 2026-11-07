@@ -19,6 +19,7 @@ export default {
           DEFAULT: color('board'),
           light: color('board-light'),
           dark: color('board-dark'),
+          blue: '#0E1F78',
         },
         'on-board': color('on-board'),
         chalk: { DEFAULT: color('chalk'), ink: color('chalk-ink') },

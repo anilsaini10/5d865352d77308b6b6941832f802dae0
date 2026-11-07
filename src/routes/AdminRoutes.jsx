@@ -35,6 +35,17 @@ import PlansPage from '../features/admin/billing/PlansPage.jsx'
 import SubscriptionsPage from '../features/admin/billing/SubscriptionsPage.jsx'
 import RoleAccountsPage from '../features/admin/roleAccounts/RoleAccountsPage.jsx'
 import RolePermissionsPage from '../features/admin/permissions/RolePermissionsPage.jsx'
+import SyllabusDashboardPage from '../features/admin/syllabus/SyllabusDashboardPage.jsx'
+import ChaptersPage from '../features/admin/syllabus/ChaptersPage.jsx'
+import PlansListPage from '../features/admin/syllabus/PlansListPage.jsx'
+import CreatePlanPage from '../features/admin/syllabus/CreatePlanPage.jsx'
+import PlanDetailPage from '../features/admin/syllabus/PlanDetailPage.jsx'
+import ClassProgressPage from '../features/admin/syllabus/ClassProgressPage.jsx'
+import TeacherProgressPage from '../features/admin/syllabus/TeacherProgressPage.jsx'
+import DelayedChaptersPage from '../features/admin/syllabus/DelayedChaptersPage.jsx'
+import ApprovalsPage from '../features/admin/syllabus/ApprovalsPage.jsx'
+import PermissionRoute from '../components/PermissionRoute.jsx'
+import { P } from '../constants/permissions.js'
 import { EntitlementsProvider } from '../features/admin/billing/EntitlementsContext.jsx'
 import PaywallGate from '../features/admin/billing/components/PaywallGate.jsx'
 import LockedModal from '../features/admin/billing/components/LockedModal.jsx'
@@ -68,15 +79,24 @@ export default function AdminRoutes() {
         <Route path="/help" element={<HelpPage />} />
         <Route path="/academic-calendar" element={<AcademicCalendarPage />} />
         <Route path="/teacher-availability" element={<TeacherAvailabilityPage />} />
-        <Route path="/analytics" element={<AnalyticsDashboardPage />} />
-        <Route path="/analytics/students" element={<StudentsAnalyticsPage />} />
-        <Route path="/analytics/attendance" element={<AttendanceAnalyticsPage />} />
-        <Route path="/analytics/academics" element={<AcademicsAnalyticsPage />} />
-        <Route path="/analytics/teachers" element={<TeachersAnalyticsPage />} />
-        <Route path="/analytics/homework" element={<HomeworkAnalyticsPage />} />
-        <Route path="/analytics/comparisons" element={<ComparisonsAnalyticsPage />} />
-        <Route path="/analytics/alerts" element={<AlertsAnalyticsPage />} />
-        <Route path="/analytics/interventions" element={<InterventionsAnalyticsPage />} />
+        <Route path="/analytics" element={<PermissionRoute perm={P.REPORTS_VIEW}><AnalyticsDashboardPage /></PermissionRoute>} />
+        <Route path="/analytics/students" element={<PermissionRoute perm={P.REPORTS_VIEW}><StudentsAnalyticsPage /></PermissionRoute>} />
+        <Route path="/analytics/attendance" element={<PermissionRoute perm={P.REPORTS_VIEW}><AttendanceAnalyticsPage /></PermissionRoute>} />
+        <Route path="/analytics/academics" element={<PermissionRoute perm={P.REPORTS_VIEW}><AcademicsAnalyticsPage /></PermissionRoute>} />
+        <Route path="/analytics/teachers" element={<PermissionRoute perm={P.REPORTS_VIEW}><TeachersAnalyticsPage /></PermissionRoute>} />
+        <Route path="/analytics/homework" element={<PermissionRoute perm={P.REPORTS_VIEW}><HomeworkAnalyticsPage /></PermissionRoute>} />
+        <Route path="/analytics/comparisons" element={<PermissionRoute perm={P.REPORTS_VIEW}><ComparisonsAnalyticsPage /></PermissionRoute>} />
+        <Route path="/analytics/alerts" element={<PermissionRoute perm={P.REPORTS_VIEW}><AlertsAnalyticsPage /></PermissionRoute>} />
+        <Route path="/analytics/interventions" element={<PermissionRoute perm={P.REPORTS_VIEW}><InterventionsAnalyticsPage /></PermissionRoute>} />
+        <Route path="/syllabus" element={<PermissionRoute perm={P.SYLLABUS_VIEW}><SyllabusDashboardPage /></PermissionRoute>} />
+        <Route path="/syllabus/chapters" element={<PermissionRoute perm={P.SYLLABUS_VIEW}><ChaptersPage /></PermissionRoute>} />
+        <Route path="/syllabus/plans" element={<PermissionRoute perm={P.SYLLABUS_VIEW}><PlansListPage /></PermissionRoute>} />
+        <Route path="/syllabus/plans/create" element={<PermissionRoute perm={P.SYLLABUS_MANAGE}><CreatePlanPage /></PermissionRoute>} />
+        <Route path="/syllabus/plans/:planId" element={<PermissionRoute perm={P.SYLLABUS_VIEW}><PlanDetailPage /></PermissionRoute>} />
+        <Route path="/syllabus/reports/class" element={<PermissionRoute perm={P.SYLLABUS_VIEW}><ClassProgressPage /></PermissionRoute>} />
+        <Route path="/syllabus/reports/teacher" element={<PermissionRoute perm={P.SYLLABUS_VIEW}><TeacherProgressPage /></PermissionRoute>} />
+        <Route path="/syllabus/reports/delayed" element={<PermissionRoute perm={P.SYLLABUS_VIEW}><DelayedChaptersPage /></PermissionRoute>} />
+        <Route path="/syllabus/approvals" element={<PermissionRoute perm={P.SYLLABUS_MANAGE}><ApprovalsPage /></PermissionRoute>} />
         <Route path="/billing/plans" element={<PlansPage />} />
         <Route path="/billing/subscriptions" element={<SubscriptionsPage />} />
         <Route path="*" element={<Navigate to="/" replace />} />
