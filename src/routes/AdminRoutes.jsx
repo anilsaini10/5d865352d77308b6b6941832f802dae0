@@ -88,15 +88,15 @@ export default function AdminRoutes() {
         <Route path="/analytics/comparisons" element={<PermissionRoute perm={P.REPORTS_VIEW}><ComparisonsAnalyticsPage /></PermissionRoute>} />
         <Route path="/analytics/alerts" element={<PermissionRoute perm={P.REPORTS_VIEW}><AlertsAnalyticsPage /></PermissionRoute>} />
         <Route path="/analytics/interventions" element={<PermissionRoute perm={P.REPORTS_VIEW}><InterventionsAnalyticsPage /></PermissionRoute>} />
-        <Route path="/syllabus" element={<PermissionRoute perm={P.SYLLABUS_VIEW}><SyllabusDashboardPage /></PermissionRoute>} />
-        <Route path="/syllabus/chapters" element={<PermissionRoute perm={P.SYLLABUS_VIEW}><ChaptersPage /></PermissionRoute>} />
-        <Route path="/syllabus/plans" element={<PermissionRoute perm={P.SYLLABUS_VIEW}><PlansListPage /></PermissionRoute>} />
-        <Route path="/syllabus/plans/create" element={<PermissionRoute perm={P.SYLLABUS_MANAGE}><CreatePlanPage /></PermissionRoute>} />
-        <Route path="/syllabus/plans/:planId" element={<PermissionRoute perm={P.SYLLABUS_VIEW}><PlanDetailPage /></PermissionRoute>} />
-        <Route path="/syllabus/reports/class" element={<PermissionRoute perm={P.SYLLABUS_VIEW}><ClassProgressPage /></PermissionRoute>} />
-        <Route path="/syllabus/reports/teacher" element={<PermissionRoute perm={P.SYLLABUS_VIEW}><TeacherProgressPage /></PermissionRoute>} />
-        <Route path="/syllabus/reports/delayed" element={<PermissionRoute perm={P.SYLLABUS_VIEW}><DelayedChaptersPage /></PermissionRoute>} />
-        <Route path="/syllabus/approvals" element={<PermissionRoute perm={P.SYLLABUS_MANAGE}><ApprovalsPage /></PermissionRoute>} />
+        <Route path="/syllabus" element={<PermissionRoute perm={P.SYLLABUS_DASHBOARD_VIEW}><SyllabusDashboardPage /></PermissionRoute>} />
+        <Route path="/syllabus/chapters" element={<PermissionRoute perm={P.SYLLABUS_CHAPTER_VIEW}><ChaptersPage /></PermissionRoute>} />
+        <Route path="/syllabus/plans" element={<PermissionRoute perm={P.SYLLABUS_PLAN_VIEW}><PlansListPage /></PermissionRoute>} />
+        <Route path="/syllabus/plans/create" element={<PermissionRoute perm={P.SYLLABUS_PLAN_MANAGE}><CreatePlanPage /></PermissionRoute>} />
+        <Route path="/syllabus/plans/:planId" element={<PermissionRoute perm={P.SYLLABUS_PLAN_VIEW}><PlanDetailPage /></PermissionRoute>} />
+        <Route path="/syllabus/reports/class" element={<PermissionRoute perm={P.SYLLABUS_CLASS_PROGRESS_VIEW}><ClassProgressPage /></PermissionRoute>} />
+        <Route path="/syllabus/reports/teacher" element={<PermissionRoute perm={P.SYLLABUS_TEACHER_PROGRESS_VIEW}><TeacherProgressPage /></PermissionRoute>} />
+        <Route path="/syllabus/reports/delayed" element={<PermissionRoute perm={P.SYLLABUS_DELAYED_VIEW}><DelayedChaptersPage /></PermissionRoute>} />
+        <Route path="/syllabus/approvals" element={<PermissionRoute perm={P.SYLLABUS_APPROVAL_VIEW}><ApprovalsPage /></PermissionRoute>} />
         <Route path="/billing/plans" element={<PlansPage />} />
         <Route path="/billing/subscriptions" element={<SubscriptionsPage />} />
         <Route path="*" element={<Navigate to="/" replace />} />

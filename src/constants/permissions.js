@@ -76,8 +76,16 @@ export const P = {
   ROLE_PERMISSIONS: 'rolePermissions',
 
   // Syllabus
-  SYLLABUS_VIEW: 'syllabusView',
-  SYLLABUS_MANAGE: 'syllabusManage',
+  SYLLABUS_DASHBOARD_VIEW: 'syllabusDashboardView',
+  SYLLABUS_CHAPTER_VIEW: 'syllabusChapterView',
+  SYLLABUS_CHAPTER_MANAGE: 'syllabusChapterManage',
+  SYLLABUS_PLAN_VIEW: 'syllabusPlanView',
+  SYLLABUS_PLAN_MANAGE: 'syllabusPlanManage',
+  SYLLABUS_CLASS_PROGRESS_VIEW: 'syllabusClassProgressView',
+  SYLLABUS_TEACHER_PROGRESS_VIEW: 'syllabusTeacherProgressView',
+  SYLLABUS_DELAYED_VIEW: 'syllabusDelayedView',
+  SYLLABUS_APPROVAL_VIEW: 'syllabusApprovalView',
+  SYLLABUS_APPROVAL_MANAGE: 'syllabusApprovalManage',
 
   // School-level modules (used in SCHOOL_PERMISSIONS)
   ATTENDANCE_MODULE: 'attendanceModule',

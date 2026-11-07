@@ -95,6 +95,22 @@ export const ROLE_PERMISSIONS = [
     ],
   },
   {
+    group: 'Syllabus',
+    items: [
+      { key: 'syllabusDashboardView', label: 'View syllabus dashboard', type: 'boolean', default: false },
+      { key: 'syllabusManage', label: 'View syllabus Manage', type: 'boolean', default: false },
+      { key: 'syllabusChapterView', label: 'View chapters', type: 'boolean', default: false },
+      { key: 'syllabusChapterManage', label: 'Manage chapters', type: 'boolean', default: false },
+      { key: 'syllabusPlanView', label: 'View syllabus plans', type: 'boolean', default: false },
+      { key: 'syllabusPlanManage', label: 'Manage syllabus plans', type: 'boolean', default: false },
+      { key: 'syllabusClassProgressView', label: 'View class progress report', type: 'boolean', default: false },
+      { key: 'syllabusTeacherProgressView', label: 'View teacher progress report', type: 'boolean', default: false },
+      { key: 'syllabusDelayedView', label: 'View delayed chapters report', type: 'boolean', default: false },
+      { key: 'syllabusApprovalView', label: 'View approvals', type: 'boolean', default: false },
+      { key: 'syllabusApprovalManage', label: 'Approve / reject / correct', type: 'boolean', default: false },
+    ],
+  },
+  {
     group: 'Exams',
     items: [
       { key: 'examsManage', label: 'Manage exams', type: 'boolean', default: false },

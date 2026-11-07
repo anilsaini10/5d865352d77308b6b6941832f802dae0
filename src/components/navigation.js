@@ -59,13 +59,13 @@ export const NAV_BY_ROLE = {
     {
       title: 'Syllabus',
       items: [
-        { to: '/syllabus', label: 'Dashboard', icon: BarChart3, end: true, permission: P.SYLLABUS_VIEW },
-        { to: '/syllabus/chapters', label: 'Chapters', icon: BookOpen, permission: P.SYLLABUS_VIEW },
-        { to: '/syllabus/plans', label: 'Plans', icon: FileText, alsoActive: ['/syllabus/plans'], permission: P.SYLLABUS_VIEW },
-        { to: '/syllabus/reports/class', label: 'Class Progress', icon: ListChecks, permission: P.SYLLABUS_VIEW },
-        { to: '/syllabus/reports/teacher', label: 'Teacher Progress', icon: UserSquare2, permission: P.SYLLABUS_VIEW },
-        { to: '/syllabus/reports/delayed', label: 'Delayed Chapters', icon: CalendarOff, permission: P.SYLLABUS_VIEW },
-        { to: '/syllabus/approvals', label: 'Approvals', icon: ClipboardCheck, permission: P.SYLLABUS_MANAGE },
+        { to: '/syllabus', label: 'Dashboard', icon: BarChart3, end: true, permission: P.SYLLABUS_DASHBOARD_VIEW },
+        { to: '/syllabus/chapters', label: 'Chapters', icon: BookOpen, permission: P.SYLLABUS_CHAPTER_VIEW },
+        { to: '/syllabus/plans', label: 'Plans', icon: FileText, alsoActive: ['/syllabus/plans'], permission: P.SYLLABUS_PLAN_VIEW },
+        { to: '/syllabus/reports/class', label: 'Class Progress', icon: ListChecks, permission: P.SYLLABUS_CLASS_PROGRESS_VIEW },
+        { to: '/syllabus/reports/teacher', label: 'Teacher Progress', icon: UserSquare2, permission: P.SYLLABUS_TEACHER_PROGRESS_VIEW },
+        { to: '/syllabus/reports/delayed', label: 'Delayed Chapters', icon: CalendarOff, permission: P.SYLLABUS_DELAYED_VIEW },
+        { to: '/syllabus/approvals', label: 'Approvals', icon: ClipboardCheck, permission: P.SYLLABUS_APPROVAL_VIEW },
       ],
     },
     {
