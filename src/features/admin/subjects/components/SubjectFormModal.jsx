@@ -4,9 +4,10 @@ import { getErrorCode, getErrorMessage } from '../../../../api/httpClient.js'
 import { subjectsApi } from '../subjects.api.js'
 import { validateSubjectForm } from '../subjects.validation.js'
 
-/** Create a subject, optionally linking it to classes straight away. `classes` should be pre-sorted. */
-export default function SubjectFormModal({ open, onClose, classes, classesLoading, onSaved }) {
+export default function SubjectFormModal({ open, onClose, subject, classes, classesLoading, onSaved }) {
+  const isEdit = !!subject
   const [name, setName] = useState('')
+  const [description, setDescription] = useState('')
   const [classIds, setClassIds] = useState([])
   const [errors, setErrors] = useState({})
   const [serverError, setServerError] = useState('')
@@ -14,12 +15,13 @@ export default function SubjectFormModal({ open, onClose, classes, classesLoadin
 
   useEffect(() => {
     if (open) {
-      setName('')
-      setClassIds([])
+      setName(subject?.name ?? '')
+      setDescription(subject?.description ?? '')
+      setClassIds(subject?.classes?.map((c) => c.id) ?? [])
     }
     setErrors({})
     setServerError('')
-  }, [open])
+  }, [open, subject])
 
   const toggleClass = (id) => setClassIds((ids) => (ids.includes(id) ? ids.filter((x) => x !== id) : [...ids, id]))
   const allSelected = classes.length > 0 && classIds.length === classes.length
@@ -28,23 +30,40 @@ export default function SubjectFormModal({ open, onClose, classes, classesLoadin
     e.preventDefault()
     setServerError('')
 
-    const validationErrors = validateSubjectForm({ name })
+    const validationErrors = validateSubjectForm({ name, description })
     setErrors(validationErrors)
     if (Object.keys(validationErrors).length > 0) return
 
-    const body = { name: name.trim() }
-    if (classIds.length > 0) body.classIds = classIds
-
     setSubmitting(true)
     try {
-      const subject = await subjectsApi.create(body)
-      onSaved(subject ?? body)
+      let result
+      if (isEdit) {
+        const body = {}
+        if (name.trim() !== subject.name) body.name = name.trim()
+        if ((description?.trim() ?? '') !== (subject.description ?? '')) body.description = description?.trim() || null
+        if (Object.keys(body).length > 0) {
+          result = await subjectsApi.update(subject.id, body)
+        }
+        const existingClassIds = new Set(subject.classes?.map((c) => c.id) ?? [])
+        const newClassIds = classIds.filter((id) => !existingClassIds.has(id))
+        if (newClassIds.length > 0) {
+          result = await subjectsApi.assignClasses(subject.id, newClassIds)
+        }
+        if (!result) result = subject
+      } else {
+        const body = { name: name.trim() }
+        if (description.trim()) body.description = description.trim()
+        if (classIds.length > 0) body.classIds = classIds
+        result = await subjectsApi.create(body)
+      }
+      onSaved(result ?? { name: name.trim() })
       onClose()
     } catch (err) {
-      if (getErrorCode(err)?.endsWith('NAME_TAKEN')) {
+      const code = getErrorCode(err)
+      if (code === 'SUBJECT_ALREADY_EXISTS' || code?.endsWith('NAME_TAKEN')) {
         setErrors({ name: 'A subject with this name already exists.' })
       } else {
-        setServerError(getErrorMessage(err, 'Could not create subject.'))
+        setServerError(getErrorMessage(err, `Could not ${isEdit ? 'update' : 'create'} subject.`))
       }
     } finally {
       setSubmitting(false)
@@ -52,10 +71,14 @@ export default function SubjectFormModal({ open, onClose, classes, classesLoadin
   }
 
   return (
-    <Modal open={open} onClose={onClose} title="Add subject" subtitle="Create a subject and optionally link it to classes">
+    <Modal open={open} onClose={onClose} title={isEdit ? 'Edit subject' : 'Add subject'} subtitle={isEdit ? 'Update subject details' : 'Create a subject and optionally link it to classes'}>
       <form onSubmit={submit} className="space-y-4" noValidate>
         <Field label="Subject name" required error={errors.name}>
           <input className={inputClass} value={name} onChange={(e) => setName(e.target.value)} placeholder="Mathematics" autoFocus />
+        </Field>
+
+        <Field label="Description" error={errors.description}>
+          <textarea className={inputClass} value={description} onChange={(e) => setDescription(e.target.value)} placeholder="Optional description" rows={2} />
         </Field>
 
         <fieldset>
@@ -95,7 +118,7 @@ export default function SubjectFormModal({ open, onClose, classes, classesLoadin
 
         <Alert>{serverError}</Alert>
 
-        <FormActions onCancel={onClose} submitting={submitting} submitLabel="Create subject" />
+        <FormActions onCancel={onClose} submitting={submitting} submitLabel={isEdit ? 'Save changes' : 'Create subject'} />
       </form>
     </Modal>
   )

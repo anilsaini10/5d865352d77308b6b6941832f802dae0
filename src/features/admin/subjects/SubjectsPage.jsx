@@ -1,9 +1,13 @@
 import { useMemo, useState } from 'react'
-import { Plus, BookOpen } from 'lucide-react'
+import { Plus, BookOpen, Pencil, Trash2, ToggleLeft, ToggleRight } from 'lucide-react'
 import AppShell from '../../../components/AppShell.jsx'
-import { AsyncContent, Button, Card, EmptyState, SearchInput, Table, THead, Th, Tr, Td, Alert } from '../../../components/ui.jsx'
+import {
+  AsyncContent, Badge, Button, Card, ConfirmDialog, EmptyState, IconButton,
+  SearchInput, Table, THead, Th, Tr, Td, Alert,
+} from '../../../components/ui.jsx'
 import { useToast } from '../../../context/ToastContext.jsx'
 import { useFetch } from '../../../hooks/useFetch.js'
+import { getErrorMessage, getErrorCode } from '../../../api/httpClient.js'
 import { useClasses } from '../classes/useClasses.js'
 import { subjectsApi } from './subjects.api.js'
 import SubjectFormModal from './components/SubjectFormModal.jsx'
@@ -15,13 +19,15 @@ export default function SubjectsPage() {
 
   const [search, setSearch] = useState('')
   const [modalOpen, setModalOpen] = useState(false)
+  const [editing, setEditing] = useState(null)
+  const [deleting, setDeleting] = useState(null)
+  const [toggling, setToggling] = useState(null)
 
   const sortedClasses = useMemo(
     () => [...classes].sort((a, b) => a.numericLevel - b.numericLevel || a.name.localeCompare(b.name)),
-    [classes]
+    [classes],
   )
 
-  // subjectId → classes it's linked to, derived from each class's curriculum.
   const classesBySubject = useMemo(() => {
     const map = new Map()
     for (const c of sortedClasses) {
@@ -42,12 +48,54 @@ export default function SubjectsPage() {
 
   const total = data?.length ?? 0
 
+  const openEdit = (subject) => {
+    setEditing({ ...subject, classes: classesBySubject.get(subject.id) ?? [] })
+    setModalOpen(true)
+  }
+
+  const openCreate = () => {
+    setEditing(null)
+    setModalOpen(true)
+  }
+
+  const handleToggleStatus = async (subject) => {
+    setToggling(subject.id)
+    try {
+      await subjectsApi.toggleStatus(subject.id)
+      notify(`${subject.name} ${subject.isActive ? 'deactivated' : 'activated'}.`, 'success')
+      reload()
+    } catch (err) {
+      notify(getErrorMessage(err, 'Could not toggle status.'), 'error')
+    } finally {
+      setToggling(null)
+    }
+  }
+
+  const handleDelete = async () => {
+    if (!deleting) return
+    try {
+      await subjectsApi.remove(deleting.id)
+      notify(`${deleting.name} deleted.`, 'success')
+      setDeleting(null)
+      reload()
+      reloadClasses()
+    } catch (err) {
+      const code = getErrorCode(err)
+      if (code === 'SUBJECT_HAS_DEPENDENTS') {
+        notify('Cannot delete — this subject is used by chapters or plans.', 'error')
+      } else {
+        notify(getErrorMessage(err, 'Could not delete subject.'), 'error')
+      }
+      setDeleting(null)
+    }
+  }
+
   return (
     <AppShell
       title="Subjects"
       subtitle={total > 0 ? `${total} ${total === 1 ? 'subject' : 'subjects'}` : 'Subjects taught at your school'}
       actions={
-        <Button icon={Plus} onClick={() => setModalOpen(true)}>
+        <Button icon={Plus} onClick={openCreate}>
           <span className="hidden sm:inline">Add subject</span>
           <span className="sm:hidden">New</span>
         </Button>
@@ -70,7 +118,7 @@ export default function SubjectsPage() {
                 icon={BookOpen}
                 title="No subjects yet"
                 message="Add subjects, then link them to classes to build each class's curriculum."
-                action={<Button icon={Plus} onClick={() => setModalOpen(true)}>Add subject</Button>}
+                action={<Button icon={Plus} onClick={openCreate}>Add subject</Button>}
               />
             ) : (
               <EmptyState icon={BookOpen} title="No matching subjects" message="Try a different search." />
@@ -80,14 +128,20 @@ export default function SubjectsPage() {
           <Table>
             <THead>
               <Th>Subject</Th>
+              <Th>Status</Th>
               <Th>Linked classes</Th>
+              <Th className="text-right">Actions</Th>
             </THead>
             <tbody>
               {subjects.map((s) => {
                 const linked = classesBySubject.get(s.id) ?? []
+                const isActive = s.isActive !== false
                 return (
                   <Tr key={s.id}>
                     <Td className="font-semibold text-ink whitespace-nowrap">{s.name}</Td>
+                    <Td>
+                      <Badge tone={isActive ? 'success' : 'neutral'}>{isActive ? 'Active' : 'Inactive'}</Badge>
+                    </Td>
                     <Td>
                       {classesLoading && classes.length === 0 ? (
                         <span className="text-ink/40">…</span>
@@ -106,6 +160,18 @@ export default function SubjectsPage() {
                         <span className="text-ink/45 italic">Not linked to any class</span>
                       )}
                     </Td>
+                    <Td>
+                      <div className="flex items-center justify-end gap-1">
+                        <IconButton
+                          icon={isActive ? ToggleRight : ToggleLeft}
+                          label={isActive ? 'Deactivate' : 'Activate'}
+                          onClick={() => handleToggleStatus(s)}
+                          disabled={toggling === s.id}
+                        />
+                        <IconButton icon={Pencil} label="Edit" onClick={() => openEdit(s)} />
+                        <IconButton icon={Trash2} label="Delete" variant="danger" onClick={() => setDeleting(s)} />
+                      </div>
+                    </Td>
                   </Tr>
                 )
               })}
@@ -116,14 +182,25 @@ export default function SubjectsPage() {
 
       <SubjectFormModal
         open={modalOpen}
-        onClose={() => setModalOpen(false)}
+        onClose={() => { setModalOpen(false); setEditing(null) }}
+        subject={editing}
         classes={sortedClasses}
         classesLoading={classesLoading && classes.length === 0}
         onSaved={(subject) => {
-          notify(`${subject.name} was created.`, 'success')
+          notify(`${subject.name} was ${editing ? 'updated' : 'created'}.`, 'success')
           reload()
           reloadClasses()
         }}
+      />
+
+      <ConfirmDialog
+        open={!!deleting}
+        onClose={() => setDeleting(null)}
+        onConfirm={handleDelete}
+        title="Delete subject"
+        message={`Are you sure you want to delete "${deleting?.name}"? This cannot be undone.`}
+        confirmLabel="Delete"
+        variant="danger"
       />
     </AppShell>
   )

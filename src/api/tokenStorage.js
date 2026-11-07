@@ -1,6 +1,7 @@
 const ACCESS_TOKEN_KEY = 'sa_access_token'
 const REFRESH_TOKEN_KEY = 'sa_refresh_token'
 const USER_KEY = 'sa_user'
+const PERMISSIONS_KEY = 'arise.permissions'
 
 export const tokenStorage = {
   getAccessToken() {
@@ -28,9 +29,28 @@ export const tokenStorage = {
   setUser(user) {
     localStorage.setItem(USER_KEY, JSON.stringify(user))
   },
+  getPermissionCache() {
+    try {
+      const raw = localStorage.getItem(PERMISSIONS_KEY)
+      if (!raw) return null
+      return JSON.parse(raw)
+    } catch {
+      localStorage.removeItem(PERMISSIONS_KEY)
+      return null
+    }
+  },
+  setPermissionCache(data) {
+    try {
+      localStorage.setItem(PERMISSIONS_KEY, JSON.stringify(data))
+    } catch { /* quota exceeded — non-critical */ }
+  },
+  clearPermissionCache() {
+    localStorage.removeItem(PERMISSIONS_KEY)
+  },
   clear() {
     localStorage.removeItem(ACCESS_TOKEN_KEY)
     localStorage.removeItem(REFRESH_TOKEN_KEY)
     localStorage.removeItem(USER_KEY)
+    localStorage.removeItem(PERMISSIONS_KEY)
   },
 }

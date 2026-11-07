@@ -1,10 +1,19 @@
-import { usePermission } from '../hooks/usePermission.js'
+import { usePermissions } from '../hooks/usePermission.js'
 import AppShell from './AppShell.jsx'
-import { EmptyState } from './ui.jsx'
+import { EmptyState, PageLoader } from './ui.jsx'
 import { ShieldOff } from 'lucide-react'
 
-export default function PermissionRoute({ perm, children }) {
-  const allowed = usePermission(perm)
+export default function PermissionRoute({ perm, anyOf, allOf, children }) {
+  const { can, loading, permissions } = usePermissions()
+
+  let allowed = false
+  if (perm) allowed = can(perm)
+  else if (anyOf) allowed = anyOf.some(can)
+  else if (allOf) allowed = allOf.every(can)
+
+  const hasCache = Object.keys(permissions).length > 0
+
+  if (loading && !hasCache) return <PageLoader />
 
   if (!allowed) {
     return (

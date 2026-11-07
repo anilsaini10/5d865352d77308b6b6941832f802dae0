@@ -5,15 +5,16 @@ import { useAuth } from './AuthContext.jsx'
 import { authApi } from './auth.api.js'
 import { validateLoginForm } from './auth.validation.js'
 import { getErrorCode, getErrorMessage } from '../../api/httpClient.js'
-import { inputClass, Field } from '../../components/ui.jsx'
+import { inputClass, selectClass, Field } from '../../components/ui.jsx'
 import { useDebouncedValue } from '../../hooks/useDebouncedValue.js'
-import { PANEL_ROLES, ROLE_LABELS, ROLES } from './roles.js'
+import { ROLES } from './roles.js'
 
-import titleLogo from '../../../src/assets/images/baner_title.png'
 import brandLogo from '../../../src/assets/images/logo_title_transparent.png'
 import classroomImg from '../../../src/assets/images/login-classroom.jpg'
 
-const LAST_ROLE_KEY = 'panel_last_role'
+const LAST_LOGIN_TYPE_KEY = 'panel_last_login_type'
+const LAST_SCHOOL_KEY = 'panel_last_school'
+const VALID_LOGIN_TYPES = ['ADMIN', 'SUPER_ADMIN', 'OTHER']
 
 const STORY = [
   {
@@ -33,28 +34,38 @@ const STORY = [
   },
 ]
 
-function readLastRole() {
+function readLastLoginType() {
   try {
-    const saved = localStorage.getItem(LAST_ROLE_KEY)
-    return PANEL_ROLES.includes(saved) ? saved : ROLES.ADMIN
+    const saved = localStorage.getItem(LAST_LOGIN_TYPE_KEY)
+    return VALID_LOGIN_TYPES.includes(saved) ? saved : ''
   } catch {
-    return ROLES.ADMIN
+    return ''
+  }
+}
+
+function readLastSchool() {
+  try {
+    const raw = localStorage.getItem(LAST_SCHOOL_KEY)
+    if (!raw) return null
+    return JSON.parse(raw)
+  } catch {
+    return null
   }
 }
 
 function SchoolSearch({ value, onChange, error }) {
-  const [query, setQuery] = useState('')
+  const [query, setQuery] = useState(value?.name || '')
   const [results, setResults] = useState([])
   const [searching, setSearching] = useState(false)
   const [open, setOpen] = useState(false)
-  const debouncedQuery = useDebouncedValue(query.trim(), 400)
+  const debouncedQuery = useDebouncedValue(query.trim(), 300)
   const containerRef = useRef(null)
 
   useEffect(() => {
-    if (!debouncedQuery) { setResults([]); return }
+    if (!open) return
     let cancelled = false
     setSearching(true)
-    authApi.searchSchools(debouncedQuery)
+    authApi.searchSchools(debouncedQuery || undefined)
       .then((data) => {
         if (!cancelled) setResults(data?.items ?? data ?? [])
       })
@@ -65,7 +76,7 @@ function SchoolSearch({ value, onChange, error }) {
         if (!cancelled) setSearching(false)
       })
     return () => { cancelled = true }
-  }, [debouncedQuery])
+  }, [debouncedQuery, open])
 
   useEffect(() => {
     const onClick = (e) => {
@@ -111,17 +122,68 @@ function SchoolSearch({ value, onChange, error }) {
                   className="w-full text-left px-3.5 py-2.5 text-sm hover:bg-line/40 transition-colors"
                 >
                   <span className="font-semibold text-ink">{s.name}</span>
-                  {s.city && <span className="text-ink/50 ml-1.5">· {s.city}</span>}
+                  {s.city && <span className="text-ink/50">, {s.city}</span>}
                 </button>
               </li>
             ))}
           </ul>
         )}
-        {open && debouncedQuery && !searching && results.length === 0 && (
+        {open && !searching && results.length === 0 && debouncedQuery && (
           <div className="absolute z-10 mt-1 w-full bg-paper border border-line rounded-lg shadow-pop px-3.5 py-3 text-sm text-ink/50">
             No schools found
           </div>
         )}
+      </div>
+    </Field>
+  )
+}
+
+function RoleSelect({ schoolId, value, onChange, error }) {
+  const [roles, setRoles] = useState([])
+  const [loading, setLoading] = useState(false)
+  const [fetchError, setFetchError] = useState('')
+
+  useEffect(() => {
+    if (!schoolId) { setRoles([]); setFetchError(''); return }
+    let cancelled = false
+    setLoading(true)
+    setFetchError('')
+    authApi.getSchoolRoles(schoolId)
+      .then((data) => {
+        if (!cancelled) setRoles(data?.roles ?? [])
+      })
+      .catch((err) => {
+        if (!cancelled) {
+          const code = getErrorCode(err)
+          setFetchError(code === 'SCHOOL_NOT_FOUND' ? 'School not found.' : 'Could not load roles.')
+          setRoles([])
+        }
+      })
+      .finally(() => { if (!cancelled) setLoading(false) })
+    return () => { cancelled = true }
+  }, [schoolId])
+
+  const noRoles = !loading && !fetchError && roles.length === 0 && !!schoolId
+  const displayError = error || fetchError || (noRoles ? 'No staff logins are set up for this school yet. Contact your school admin.' : undefined)
+
+  return (
+    <Field label="Role" required error={displayError}>
+      <div className="relative">
+        <select
+          value={value?.customRoleId || ''}
+          onChange={(e) => {
+            const found = roles.find((r) => r.customRoleId === e.target.value)
+            onChange(found || null)
+          }}
+          disabled={loading || noRoles || !!fetchError}
+          className={selectClass}
+        >
+          <option value="" disabled>{loading ? 'Loading roles...' : 'Select role'}</option>
+          {roles.map((r) => (
+            <option key={r.customRoleId} value={r.customRoleId}>{r.name}</option>
+          ))}
+        </select>
+        {loading && <Loader2 size={15} className="absolute right-3.5 top-1/2 -translate-y-1/2 text-ink/35 animate-spin pointer-events-none" />}
       </div>
     </Field>
   )
@@ -132,16 +194,17 @@ export default function LoginPage() {
   const navigate = useNavigate()
   const location = useLocation()
 
-  const [role, setRole] = useState(readLastRole)
+  const [loginType, setLoginType] = useState(readLastLoginType)
   const [identifier, setIdentifier] = useState('')
   const [password, setPassword] = useState('')
   const [showPassword, setShowPassword] = useState(false)
-  const [school, setSchool] = useState(null)
+  const [school, setSchool] = useState(() => readLastLoginType() === 'OTHER' ? readLastSchool() : null)
+  const [selectedRole, setSelectedRole] = useState(null)
   const [errors, setErrors] = useState({})
   const [serverError, setServerError] = useState('')
   const [submitting, setSubmitting] = useState(false)
 
-  const needsSchool = role === ROLES.STAFF
+  const isOther = loginType === 'OTHER'
 
   if (ready && user) {
     return <Navigate to={location.state?.from || '/'} replace />
@@ -149,29 +212,70 @@ export default function LoginPage() {
 
   const infoMessage = location.state?.message
 
+  const subtitleMap = {
+    ADMIN: 'Sign in to the admin console',
+    SUPER_ADMIN: 'Sign in to the super admin console',
+    OTHER: 'Sign in as school staff',
+  }
+  const subtitle = loginType ? subtitleMap[loginType] : 'Sign in to continue'
+
+  const canSubmit = !!loginType && !!identifier.trim() && !!password &&
+    (!isOther || (!!school && !!selectedRole))
+
+  const handleLoginTypeChange = (e) => {
+    setLoginType(e.target.value)
+    setSchool(null)
+    setSelectedRole(null)
+    setServerError('')
+    setErrors({})
+  }
+
+  const handleSchoolChange = (s) => {
+    setSchool(s)
+    setSelectedRole(null)
+    setErrors((prev) => ({ ...prev, school: undefined, role: undefined }))
+  }
+
   const handleSubmit = async (e) => {
     e.preventDefault()
     setServerError('')
 
     const validationErrors = validateLoginForm({ identifier, password })
-    if (needsSchool && !school) validationErrors.school = 'Select your school.'
+    if (!loginType) validationErrors.loginType = 'Select a login type.'
+    if (isOther && !school) validationErrors.school = 'Select your school.'
+    if (isOther && !selectedRole) validationErrors.role = 'Select your role.'
     setErrors(validationErrors)
     if (Object.keys(validationErrors).length > 0) return
 
+    const apiRole = isOther ? ROLES.STAFF : loginType
+    const schoolId = isOther ? school.id : undefined
+    const customRoleId = isOther ? selectedRole.customRoleId : undefined
+
     setSubmitting(true)
     try {
-      await login(identifier.trim(), password, role, needsSchool ? school.id : undefined)
+      await login(identifier.trim(), password, apiRole, schoolId, customRoleId)
       try {
-        localStorage.setItem(LAST_ROLE_KEY, role)
+        localStorage.setItem(LAST_LOGIN_TYPE_KEY, loginType)
+        if (isOther && school) {
+          localStorage.setItem(LAST_SCHOOL_KEY, JSON.stringify({ id: school.id, name: school.name }))
+        }
       } catch {
         // storage unavailable
       }
       navigate(location.state?.from || '/', { replace: true })
     } catch (err) {
       const code = getErrorCode(err)
-      if (code === 'INVALID_CREDENTIALS') setServerError('Invalid email/username/mobile or password.')
-      else if (code === 'ROLE_INACTIVE') setServerError(getErrorMessage(err, 'Your role has been disabled. Please contact your school admin.'))
-      else setServerError(getErrorMessage(err, 'Could not sign in. Please try again.'))
+      if (code === 'INVALID_CREDENTIALS') {
+        setServerError('Invalid credentials. Check the login type, school and role you selected.')
+      } else if (code === 'ROLE_INACTIVE') {
+        setServerError(getErrorMessage(err, 'Your role has been disabled. Please contact your school admin.'))
+      } else if (code === 'SCHOOL_ID_REQUIRED') {
+        setServerError('Please select your school.')
+      } else if (code === 'VALIDATION_ERROR') {
+        setServerError(getErrorMessage(err, 'Invalid request. Please check your inputs.'))
+      } else {
+        setServerError(getErrorMessage(err, 'Could not sign in. Please try again.'))
+      }
     } finally {
       setSubmitting(false)
     }
@@ -223,35 +327,21 @@ export default function LoginPage() {
         <div className="w-full max-w-sm">
           <div className="flex flex-col items-center text-center mb-8">
             <h1 className="text-2xl font-bold text-ink">Welcome Back!</h1>
-            <p className="text-sm text-ink/55 mt-1.5">
-              Sign in to the {ROLE_LABELS[role].toLowerCase()} console
-            </p>
+            <p className="text-sm text-ink/55 mt-1.5">{subtitle}</p>
           </div>
 
           <form
             onSubmit={handleSubmit}
             className="bg-surface border border-line rounded-2xl shadow-card p-6 space-y-4"
           >
-            <div
-              role="radiogroup"
-              aria-label="Sign in as"
-              className={`grid gap-1 p-1 bg-paper border border-line rounded-xl ${PANEL_ROLES.length === 3 ? 'grid-cols-3' : 'grid-cols-2'}`}
-            >
-              {PANEL_ROLES.map((r) => (
-                <button
-                  key={r}
-                  type="button"
-                  role="radio"
-                  aria-checked={role === r}
-                  onClick={() => { setRole(r); setServerError('') }}
-                  className={`py-2 rounded-lg text-sm font-semibold transition-colors ${
-                    role === r ? 'bg-board text-on-board shadow-card' : 'text-ink/60 hover:text-ink'
-                  }`}
-                >
-                  {ROLE_LABELS[r]}
-                </button>
-              ))}
-            </div>
+            <Field label="Login as" required error={errors.loginType}>
+              <select value={loginType} onChange={handleLoginTypeChange} className={selectClass}>
+                <option value="" disabled>Select login type</option>
+                <option value="ADMIN">Admin</option>
+                <option value="SUPER_ADMIN">Super Admin</option>
+                <option value="OTHER">Other</option>
+              </select>
+            </Field>
 
             {infoMessage && (
               <p className="text-sm text-board font-medium bg-board/8 border border-board/20 rounded-lg px-3 py-2">
@@ -259,8 +349,18 @@ export default function LoginPage() {
               </p>
             )}
 
-            {needsSchool && (
-              <SchoolSearch value={school} onChange={setSchool} error={errors.school} />
+            {isOther && (
+              <>
+                <SchoolSearch value={school} onChange={handleSchoolChange} error={errors.school} />
+                {school && (
+                  <RoleSelect
+                    schoolId={school.id}
+                    value={selectedRole}
+                    onChange={setSelectedRole}
+                    error={errors.role}
+                  />
+                )}
+              </>
             )}
 
             <Field label="Email, username or mobile number" required error={errors.identifier}>
@@ -271,7 +371,6 @@ export default function LoginPage() {
                 placeholder="Enter email, username or mobile"
                 className={inputClass}
                 autoComplete="username"
-                autoFocus={!needsSchool}
               />
             </Field>
 
@@ -314,7 +413,7 @@ export default function LoginPage() {
 
             <button
               type="submit"
-              disabled={submitting}
+              disabled={!canSubmit || submitting}
               className="w-full flex items-center justify-center gap-2 bg-board hover:bg-board-light disabled:opacity-60 text-paper font-semibold text-sm rounded-lg py-3 transition-colors"
             >
               {submitting ? (

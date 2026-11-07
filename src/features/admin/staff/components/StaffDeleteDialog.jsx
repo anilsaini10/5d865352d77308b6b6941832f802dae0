@@ -61,6 +61,7 @@ export default function StaffDeleteDialog({ staff, onClose, onDelete, onDeactiva
           <p>
             <span className="font-semibold text-ink">{staff.name}</span> ({staff.employeeId}) and their entire record — salary,
             experience, joining date and contact details — will be erased permanently. It cannot be restored.
+            {staff.userId && ' Their login account will be deactivated immediately.'}
           </p>
           {isActive && (
             <p className="bg-chalk/15 border border-chalk/40 text-chalk-ink rounded-lg px-3 py-2">

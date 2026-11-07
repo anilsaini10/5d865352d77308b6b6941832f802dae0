@@ -8,6 +8,7 @@ import {
   Button,
   Card,
   ConfirmDialog,
+  CredentialsBanner,
   EmptyState,
   IconButton,
   RECORD_STATUS,
@@ -18,7 +19,7 @@ import {
   Th,
   Tr,
   Td,
-  inputClass,
+  selectClass,
 } from '../../../components/ui.jsx'
 import { useFetch } from '../../../hooks/useFetch.js'
 import { useDebouncedValue } from '../../../hooks/useDebouncedValue.js'
@@ -26,8 +27,15 @@ import { useToast } from '../../../context/ToastContext.jsx'
 import { getErrorMessage } from '../../../api/httpClient.js'
 import { experienceLabel, formatCurrency, formatDate } from '../../../utils/format.js'
 import { staffApi } from './staff.api.js'
+import { roleAccountsApi } from '../roleAccounts/roleAccounts.api.js'
 import StaffFormModal from './components/StaffFormModal.jsx'
 import StaffDeleteDialog from './components/StaffDeleteDialog.jsx'
+
+function LoginBadge({ member }) {
+  if (!member.userId) return <Badge tone="neutral">No Account</Badge>
+  if (member.isActive) return <Badge tone="active">Active</Badge>
+  return <Badge tone="danger">Disabled</Badge>
+}
 
 const PAGE_SIZE = 15
 
@@ -35,15 +43,18 @@ export default function StaffPage() {
   const { notify } = useToast()
 
   const [search, setSearch] = useState('')
-  const [designation, setDesignation] = useState('')
+  const [roleFilter, setRoleFilter] = useState('')
   const [status, setStatus] = useState(RECORD_STATUS.ALL)
   const [page, setPage] = useState(1)
   const debouncedSearch = useDebouncedValue(search.trim())
-  const debouncedDesignation = useDebouncedValue(designation.trim())
 
-  const [formModal, setFormModal] = useState(null) // { staff? } — no staff means "create"
+  const { data: rolesData } = useFetch(() => roleAccountsApi.listRoles(), [], { errorMessage: 'Could not load roles.' })
+  const roles = Array.isArray(rolesData) ? rolesData : rolesData?.items ?? []
+
+  const [formModal, setFormModal] = useState(null)
   const [deactivateTarget, setDeactivateTarget] = useState(null)
   const [deleteTarget, setDeleteTarget] = useState(null)
+  const [justCreated, setJustCreated] = useState(null)
 
   const { data, loading, error, reload } = useFetch(
     () =>
@@ -51,24 +62,27 @@ export default function StaffPage() {
         page,
         pageSize: PAGE_SIZE,
         search: debouncedSearch,
-        designation: debouncedDesignation,
-        // the staff endpoint returns everyone when status is omitted
+        customRoleId: roleFilter || undefined,
         status: status === RECORD_STATUS.ALL ? undefined : status,
       }),
-    [page, debouncedSearch, debouncedDesignation, status],
+    [page, debouncedSearch, roleFilter, status],
     { errorMessage: 'Could not load staff.' }
   )
 
   const staff = data?.items ?? []
-  const hasFilters = !!(debouncedSearch || debouncedDesignation)
+  const hasFilters = !!(debouncedSearch || roleFilter)
 
   const withPageReset = (setter) => (value) => {
     setter(value)
     setPage(1)
   }
 
-  const handleSaved = (saved, { isEdit }) => {
-    notify(isEdit ? `${saved?.name ?? 'Staff member'} was updated.` : `${saved?.name ?? 'Staff member'} was added.`, 'success')
+  const handleSaved = (result, { isEdit }) => {
+    if (isEdit) {
+      notify(`${result?.name ?? 'Staff member'} was updated.`, 'success')
+    } else {
+      setJustCreated(result)
+    }
     reload()
   }
 
@@ -94,7 +108,7 @@ export default function StaffPage() {
   }
 
   const emptyState = hasFilters ? (
-    <EmptyState icon={BriefcaseBusiness} title="No matches" message="Try a different search term or designation." />
+    <EmptyState icon={BriefcaseBusiness} title="No matches" message="Try a different search term or role." />
   ) : status === RECORD_STATUS.INACTIVE ? (
     <EmptyState icon={BriefcaseBusiness} title="No inactive staff" message="Staff you deactivate show up here." />
   ) : (
@@ -114,29 +128,44 @@ export default function StaffPage() {
     >
       <div className="flex flex-col sm:flex-row gap-3 mb-5">
         <SearchInput value={search} onChange={withPageReset(setSearch)} placeholder="Search by name, employee ID or phone..." />
-        <input
-          className={`${inputClass} sm:w-56`}
-          value={designation}
-          onChange={(e) => withPageReset(setDesignation)(e.target.value)}
-          placeholder="Filter by designation"
-          aria-label="Filter by designation"
-        />
+        <select
+          className={`${selectClass} sm:w-56`}
+          value={roleFilter}
+          onChange={(e) => withPageReset(setRoleFilter)(e.target.value)}
+          aria-label="Filter by role"
+        >
+          <option value="">All roles</option>
+          {roles.map((r) => (
+            <option key={r.id} value={r.id}>{r.name}</option>
+          ))}
+        </select>
       </div>
 
       <div className="mb-5 overflow-x-auto">
         <StatusFilter value={status} onChange={withPageReset(setStatus)} inactiveLabel="Inactive" />
       </div>
 
+      {justCreated && (
+        <CredentialsBanner
+          title={`${justCreated.staff?.name ?? 'Staff member'} added`}
+          description="Share this password with the staff member. They can change it after first login."
+          loginId={justCreated.staff?.email}
+          password={justCreated.defaultPassword}
+          onDismiss={() => setJustCreated(null)}
+        />
+      )}
+
       <Card className="overflow-hidden">
         <AsyncContent loading={loading} error={error} empty={staff.length === 0} emptyState={emptyState}>
           <Table>
             <THead>
               <Th>Staff member</Th>
-              <Th>Designation</Th>
+              <Th>Role</Th>
               <Th>Phone</Th>
               <Th>Experience</Th>
               <Th>Salary</Th>
               <Th>Joined</Th>
+              <Th>Login</Th>
               <Th>Status</Th>
               <Th className="text-right">Actions</Th>
             </THead>
@@ -153,13 +182,14 @@ export default function StaffPage() {
                       </span>
                     </Td>
                     <Td>
-                      <span className="block text-ink/80">{m.designation}</span>
+                      <span className="block text-ink/80">{m.customRole?.name || m.designation}</span>
                       <span className="block text-xs text-ink/50">{m.qualification}</span>
                     </Td>
                     <Td className="whitespace-nowrap">{m.phone}</Td>
                     <Td className="whitespace-nowrap">{experienceLabel(m.experienceYears, m.experienceMonths)}</Td>
                     <Td className="whitespace-nowrap">{formatCurrency(m.salary)}</Td>
                     <Td className="whitespace-nowrap">{formatDate(m.joiningDate)}</Td>
+                    <Td><LoginBadge member={m} /></Td>
                     <Td>
                       <Badge tone={active ? 'active' : 'inactive'}>{active ? 'Active' : 'Inactive'}</Badge>
                     </Td>

@@ -1,12 +1,14 @@
 import { useLayoutEffect, useRef } from 'react'
 import { NavLink, useLocation } from 'react-router-dom'
-import { UserRound, GraduationCap, Lock, X } from 'lucide-react'
+import { GraduationCap, Lock, ShieldOff, X } from 'lucide-react'
 import { useAuth } from '../features/auth/AuthContext.jsx'
+import { usePermissions } from '../hooks/usePermission.js'
 import { ROLE_LABELS, ROLES } from '../features/auth/roles.js'
 import { NAV_BY_ROLE } from './navigation.js'
 import { useFeature } from '../features/admin/billing/EntitlementsContext.jsx'
 import { useSupportOpenCount } from '../features/support/useSupportOpenCount.js'
 import { useRecoveryPendingCount } from '../features/admin/recovery/useRecoveryPendingCount.js'
+import { useToast } from '../context/ToastContext.jsx'
 
 // AppShell (and so Sidebar) remounts on every page change, which would reset the nav scroll to the top.
 let savedNavScroll = 0
@@ -24,9 +26,12 @@ function NavLock({ feature }) {
 
 export default function Sidebar({ open, onClose }) {
   const { user } = useAuth()
+  const { can } = usePermissions()
+  const { notify } = useToast()
   const { pathname } = useLocation()
   const role = user?.role ?? ROLES.SUPER_ADMIN
-  const navGroups = NAV_BY_ROLE[role] ?? []
+  const allGroups = NAV_BY_ROLE[role] ?? []
+  const navGroups = allGroups.filter((g) => g.items.length > 0)
   const roleLabel = ROLE_LABELS[role]
   const isAdmin = role === ROLES.ADMIN
   const isStaff = role === ROLES.STAFF
@@ -95,50 +100,52 @@ export default function Sidebar({ open, onClose }) {
               {group.title && (
                 <p className="px-3.5 pb-1 text-[11px] uppercase tracking-wider text-on-board/40 font-semibold">{group.title}</p>
               )}
-              {group.items.map(({ to, label, icon: Icon, end, badge, alsoActive, feature }) => (
-                <NavLink
-                  key={to}
-                  to={to}
-                  end={end}
-                  onClick={onClose}
-                  className={({ isActive }) =>
-                    `flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm font-medium transition-colors ${
-                      isActive || alsoActive?.some((p) => pathname === p || pathname.startsWith(`${p}/`))
-                        ? 'bg-on-board/10 text-on-board'
-                        : 'text-on-board/65 hover:text-on-board hover:bg-on-board/5'
-                    }`
-                  }
-                  data-active={isActiveItem(pathname, to, end, alsoActive)}
-                >
-                  <Icon size={18} strokeWidth={2.1} />
-                  {label}
-                  {feature && <NavLock feature={feature} />}
-                  {badge && badges[badge] > 0 && (
-                    <span className="ml-auto min-w-[1.375rem] text-center rounded-full bg-chalk text-board text-[11px] font-bold px-1.5 py-0.5" aria-label={`${badges[badge]} open`}>
-                      {badges[badge] > 99 ? '99+' : badges[badge]}
-                    </span>
-                  )}
-                </NavLink>
-              ))}
+              {group.items.map(({ to, label, icon: Icon, end, badge, alsoActive, feature, permission }) => {
+                const denied = permission && !can(permission)
+                if (denied) {
+                  return (
+                    <button
+                      key={to}
+                      type="button"
+                      onClick={() => notify('This feature is not available for your role. Contact your administrator.', 'error')}
+                      className="w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm font-medium text-on-board/30 cursor-not-allowed"
+                    >
+                      <Icon size={18} strokeWidth={2.1} />
+                      {label}
+                      <ShieldOff size={14} className="ml-auto opacity-60" aria-label="No permission" />
+                    </button>
+                  )
+                }
+                return (
+                  <NavLink
+                    key={to}
+                    to={to}
+                    end={end}
+                    onClick={onClose}
+                    className={({ isActive }) =>
+                      `flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm font-medium transition-colors ${
+                        isActive || alsoActive?.some((p) => pathname === p || pathname.startsWith(`${p}/`))
+                          ? 'bg-on-board/10 text-on-board'
+                          : 'text-on-board/65 hover:text-on-board hover:bg-on-board/5'
+                      }`
+                    }
+                    data-active={isActiveItem(pathname, to, end, alsoActive)}
+                  >
+                    <Icon size={18} strokeWidth={2.1} />
+                    {label}
+                    {feature && <NavLock feature={feature} />}
+                    {badge && badges[badge] > 0 && (
+                      <span className="ml-auto min-w-[1.375rem] text-center rounded-full bg-chalk text-board text-[11px] font-bold px-1.5 py-0.5" aria-label={`${badges[badge]} open`}>
+                        {badges[badge] > 99 ? '99+' : badges[badge]}
+                      </span>
+                    )}
+                  </NavLink>
+                )
+              })}
             </div>
           ))}
         </nav>
 
-        <div className="mx-4 mb-4 mt-2 p-3 rounded-2xl bg-board-dark border border-on-board/10 shadow-card">
-          <NavLink
-            to="/profile"
-            onClick={onClose}
-            data-paywall-allow
-            className={({ isActive }) =>
-              `w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-sm font-medium transition-colors ${
-                isActive ? 'bg-on-board/10 text-on-board' : 'text-on-board/75 hover:text-on-board hover:bg-on-board/10'
-              }`
-            }
-          >
-            <UserRound size={17} />
-            Profile
-          </NavLink>
-        </div>
       </aside>
 
     </>

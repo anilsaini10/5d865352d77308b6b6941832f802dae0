@@ -16,7 +16,8 @@ export default function PaywallGate() {
   const { paywalled } = useEntitlements()
   const { pathname } = useLocation()
   const onBilling = pathname.startsWith('/billing')
-  const active = paywalled && !onBilling
+  const onProfile = pathname.startsWith('/profile')
+  const active = paywalled && !onBilling && !onProfile
   const [open, setOpen] = useState(false)
 
   // Opens on login / reload, and on every navigation while still unpaid.

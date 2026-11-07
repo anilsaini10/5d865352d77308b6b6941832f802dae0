@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Plus, GraduationCap, Eye, Pencil, Trash2, RotateCcw, FileDown, CreditCard } from 'lucide-react'
+import { Plus, GraduationCap, Eye, Pencil, Trash2, RotateCcw, FileDown, CreditCard, Upload } from 'lucide-react'
 import AppShell from '../../../components/AppShell.jsx'
 import Pagination from '../../../components/Pagination.jsx'
 import {
@@ -33,6 +33,7 @@ import { usersApi } from '../users/users.api.js'
 import StudentDetailsModal from './components/StudentDetailsModal.jsx'
 import StudentCreatedBanner from './components/StudentCreatedBanner.jsx'
 import StudentIdCard from './components/StudentIdCard.jsx'
+import BulkUploadModal from './components/BulkUploadModal.jsx'
 import { printPdf } from '../../../utils/pdf.js'
 
 const PAGE_SIZE = 15
@@ -54,6 +55,7 @@ export default function StudentsPage() {
   const [resetTarget, setResetTarget] = useState(null)
   const [justCreated, setJustCreated] = useState(null)
   const [idCardStudent, setIdCardStudent] = useState(null)
+  const [bulkUploadOpen, setBulkUploadOpen] = useState(false)
 
   const { data, loading, error, reload } = useFetch(
     () =>
@@ -185,6 +187,7 @@ export default function StudentsPage() {
       actions={
         <div className="flex items-center gap-2">
           {students.length > 0 && <Button variant="secondary" size="sm" icon={FileDown} onClick={exportPdf}>Export PDF</Button>}
+          <Button variant="secondary" icon={Upload} onClick={() => setBulkUploadOpen(true)}>Bulk upload</Button>
           <Button icon={Plus} onClick={() => setFormModal({})}>Add student</Button>
         </div>
       }
@@ -320,6 +323,18 @@ export default function StudentsPage() {
       {idCardStudent && (
         <StudentIdCard student={idCardStudent} onClose={() => setIdCardStudent(null)} />
       )}
+
+      <BulkUploadModal
+        open={bulkUploadOpen}
+        onClose={() => setBulkUploadOpen(false)}
+        classes={classes}
+        onDone={(count) => {
+          if (count > 0) {
+            notify(`${count} student${count !== 1 ? 's' : ''} uploaded successfully.`, 'success')
+            reload()
+          }
+        }}
+      />
 
       <ConfirmDialog
         open={!!deleteTarget}
