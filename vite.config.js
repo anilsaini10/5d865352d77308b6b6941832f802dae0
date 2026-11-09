@@ -11,11 +11,19 @@ export default defineConfig(({ command, mode }) => {
   const proxyRemote = command === 'serve' && /^https?:\/\//.test(apiUrl) && !/localhost|127\.0\.0\.1/.test(apiUrl)
   const { origin, pathname } = proxyRemote ? new URL(apiUrl) : {}
 
+  const securityHeaders = {
+    'X-Content-Type-Options': 'nosniff',
+    'X-Frame-Options': 'DENY',
+    'Content-Security-Policy': "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: blob:; connect-src 'self' https://*.onrender.com; frame-ancestors 'none'",
+  }
+
   return {
     plugins: [react()],
     define: proxyRemote ? { 'import.meta.env.VITE_API_BASE_URL': JSON.stringify(pathname) } : {},
-    server: proxyRemote
-      ? { proxy: { [pathname]: { target: origin, changeOrigin: true, secure: true } } }
-      : {},
+    server: {
+      headers: securityHeaders,
+      ...(proxyRemote ? { proxy: { [pathname]: { target: origin, changeOrigin: true, secure: true } } } : {}),
+    },
+    preview: { headers: securityHeaders },
   }
 })

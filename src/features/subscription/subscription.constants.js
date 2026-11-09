@@ -5,27 +5,25 @@ export const ROLE_OPTIONS = [
 ]
 export const roleLabel = (v) => ROLE_OPTIONS.find((r) => r.value === v)?.label ?? v
 
-const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
-const parseDay = (s) => { const [y, m, d] = String(s).split('-').map(Number); return { y, m: MONTHS[m - 1], d } }
-/** "1–15 Nov", "28 Oct – 3 Nov" or "28 Dec 2026 – 3 Jan 2027" from two YYYY-MM-DD days. */
+const pad2 = (n) => String(n).padStart(2, '0')
+const parseDateParts = (s) => { const [y, m, d] = String(s).split('-').map(Number); return { y, m, d } }
+/** "dd-mm-yyyy - dd-mm-yyyy" from two YYYY-MM-DD days. */
 export function trialRangeLabel(startDate, endDate) {
-  const a = parseDay(startDate)
-  const b = parseDay(endDate)
-  if (a.y !== b.y) return `${a.d} ${a.m} ${a.y} – ${b.d} ${b.m} ${b.y}`
-  if (a.m === b.m) return a.d === b.d ? `${a.d} ${a.m}` : `${a.d}–${b.d} ${a.m}`
-  return `${a.d} ${a.m} – ${b.d} ${b.m}`
+  const a = parseDateParts(startDate)
+  const b = parseDateParts(endDate)
+  return `${pad2(a.d)}-${pad2(a.m)}-${a.y} - ${pad2(b.d)}-${pad2(b.m)}-${b.y}`
 }
 export const TRIAL_STATUSES = {
   SCHEDULED: { label: 'Scheduled', tone: 'info' },
   ACTIVE: { label: 'Active', tone: 'success' },
   ENDED: { label: 'Ended', tone: 'inactive' },
 }
-/** { text: "Trial: 1–15 Nov · Active, 3 days left", tone } for a plan.trial, or null. */
+/** { text: "01-11-2026 - 15-11-2026 · Active, 3d left", tone } for a plan.trial, or null. */
 export function trialBadge(trial) {
   if (!trial) return null
   const meta = TRIAL_STATUSES[trial.status] ?? { label: trial.status, tone: 'neutral' }
-  const left = trial.status === 'ACTIVE' && trial.daysLeft != null ? `, ${trial.daysLeft} day${trial.daysLeft === 1 ? '' : 's'} left` : ''
-  return { text: `Trial: ${trialRangeLabel(trial.startDate, trial.endDate)} · ${meta.label}${left}`, tone: meta.tone }
+  const left = trial.status === 'ACTIVE' && trial.daysLeft != null ? `, ${trial.daysLeft}d left` : ''
+  return { text: `${trialRangeLabel(trial.startDate, trial.endDate)} · ${meta.label}${left}`, tone: meta.tone }
 }
 
 export const SCOPES = [

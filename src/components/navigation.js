@@ -31,6 +31,13 @@ export const NAV_BY_ROLE = {
         { to: '/subscriptions', label: 'Subscriptions', icon: Receipt },
       ],
     },
+    {
+      title: 'Settings',
+      items: [
+        { to: '/profile', label: 'Profile', icon: UserRound },
+        { to: '/help', label: 'Help & Support', icon: LifeBuoy },
+      ],
+    },
   ],
   [ROLES.ADMIN]: [
     {
@@ -109,6 +116,12 @@ export const NAV_BY_ROLE = {
     {
       items: [
         { to: '/', label: 'Home', icon: Home, end: true },
+      ],
+    },
+    {
+      title: 'Settings',
+      items: [
+        { to: '/profile', label: 'Profile', icon: UserRound },
       ],
     },
   ],

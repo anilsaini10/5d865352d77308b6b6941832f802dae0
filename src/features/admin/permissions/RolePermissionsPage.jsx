@@ -109,11 +109,25 @@ function RolePermissionInput({ item, value, blocked, saving, onToggle, onValueCh
   return null
 }
 
-function RolePermissionGroup({ group, permissions, schoolPermissions, blockedBySchool, savingKeys, onToggle, onValueChange }) {
+function RolePermissionGroup({ group, permissions, schoolPermissions, blockedBySchool, savingKeys, onToggle, onToggleAll, onValueChange }) {
+  const boolItems = group.items.filter((i) => i.type === 'boolean')
+  const toggleable = boolItems.filter((i) => !blockedBySchool.includes(i.key) && schoolPermissions[i.key] !== false)
+  const allChecked = toggleable.length > 0 && toggleable.every((i) => getPerm(permissions, i.key, i))
+
   return (
     <div className="bg-surface border border-line rounded-2xl shadow-card overflow-hidden">
-      <div className="px-5 py-3.5 border-b border-line">
+      <div className="flex items-center justify-between px-5 py-3.5 border-b border-line">
         <h3 className="font-display text-sm font-semibold text-ink">{group.group}</h3>
+        {toggleable.length > 1 && (
+          <button
+            type="button"
+            onClick={() => onToggleAll(toggleable, !allChecked)}
+            disabled={savingKeys.size > 0}
+            className="text-xs font-semibold text-board hover:text-board-light disabled:opacity-50 transition-colors"
+          >
+            {allChecked ? 'Clear all' : 'Select all'}
+          </button>
+        )}
       </div>
       <div className="divide-y divide-line">
         {group.items.map((item) => {
@@ -265,6 +279,51 @@ export default function RolePermissionsPage() {
     }
   }
 
+  const toggleGroupAll = async (items, value) => {
+    if (!selectedRoleId || !selectedRole) return
+    const patch = {}
+    for (const item of items) patch[item.key] = value
+    const merged = { ...(selectedRole.permissions ?? {}), ...patch }
+
+    const prevPerms = { ...(selectedRole.permissions ?? {}) }
+    setData((d) => ({
+      ...d,
+      roles: d.roles.map((r) =>
+        r.role.id === selectedRoleId ? { ...r, permissions: merged } : r
+      ),
+    }))
+
+    const keys = items.map((i) => i.key)
+    setSavingKeys((prev) => {
+      const next = new Set(prev)
+      keys.forEach((k) => next.add(k))
+      return next
+    })
+
+    try {
+      const updated = await rolePermissionsApi.put(selectedRoleId, merged)
+      setData((d) => ({
+        ...d,
+        roles: d.roles.map((r) => (r.role.id === selectedRoleId ? updated : r)),
+      }))
+      refetchPermissions()
+    } catch (err) {
+      setData((d) => ({
+        ...d,
+        roles: d.roles.map((r) =>
+          r.role.id === selectedRoleId ? { ...r, permissions: prevPerms } : r
+        ),
+      }))
+      notify(getErrorMessage(err, 'Could not update permissions.'), 'error')
+    } finally {
+      setSavingKeys((prev) => {
+        const next = new Set(prev)
+        keys.forEach((k) => next.delete(k))
+        return next
+      })
+    }
+  }
+
   const clearAll = async () => {
     if (!selectedRoleId) return
     try {
@@ -360,6 +419,7 @@ export default function RolePermissionsPage() {
                         blockedBySchool={selectedRole.blockedBySchool ?? []}
                         savingKeys={savingKeys}
                         onToggle={patchKey}
+                        onToggleAll={toggleGroupAll}
                         onValueChange={patchKey}
                       />
                     ))}
