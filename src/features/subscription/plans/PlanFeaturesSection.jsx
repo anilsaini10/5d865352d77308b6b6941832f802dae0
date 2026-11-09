@@ -77,6 +77,7 @@ export default function PlanFeaturesSection({ plan, onChange }) {
 function FeaturePicker({ plan, onClose, onSaved }) {
   const isSchool = plan.scope === 'SCHOOL'
   const perRole = isSchool || plan.targetRoles.length > 1
+  const roleNames = plan.targetRoles.map(roleLabel).join(' / ')
   const { data, loading, error } = useFetch(() => featuresApi.list(), [], { errorMessage: 'Could not load features.' })
   const [selected, setSelected] = useState(() => new Set(plan.features.map((f) => keyOf(f.featureId, f.role))))
   const [saving, setSaving] = useState(false)
