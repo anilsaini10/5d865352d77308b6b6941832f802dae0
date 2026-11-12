@@ -2,7 +2,7 @@ import {
   LayoutDashboard, School, Users, Layers, BookOpen, GraduationCap, UserSquare2, BriefcaseBusiness,
   CalendarClock, ClipboardList, CalendarOff, Megaphone, CalendarDays, Bell, Settings, LifeBuoy, Inbox, CalendarRange, Puzzle, KeyRound, CreditCard, Receipt, Sparkles,
   BarChart3, ShieldCheck, UserPlus, LogOut, Home, ShieldHalf, UserRound,
-  FileText, ListChecks, ClipboardCheck,
+  FileText, ListChecks, ClipboardCheck, Bug,
 } from 'lucide-react'
 import { ROLES } from '../features/auth/roles.js'
 import { P } from '../constants/permissions.js'
@@ -19,6 +19,7 @@ export const NAV_BY_ROLE = {
         { to: '/schools', label: 'Schools', icon: School },
         { to: '/admins', label: 'Admins', icon: Users },
         { to: '/support', label: 'Support Inbox', icon: Inbox, badge: 'supportOpen' },
+        { to: '/crash-reports', label: 'Crash Reports', icon: Bug },
         { to: '/roles', label: 'Roles', icon: ShieldCheck },
         { to: '/role-permissions', label: 'Role Permissions', icon: ShieldHalf },
       ],

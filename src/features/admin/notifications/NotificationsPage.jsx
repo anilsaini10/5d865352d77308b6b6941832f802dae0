@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { Bell, CheckCheck, Check, Send } from 'lucide-react'
+import { Bell, CheckCheck, Check, Send, Users } from 'lucide-react'
 import AppShell from '../../../components/AppShell.jsx'
 import Pagination from '../../../components/Pagination.jsx'
 import { AsyncContent, Badge, Button, Card, EmptyState, Tabs } from '../../../components/ui.jsx'
@@ -9,6 +9,7 @@ import { getErrorMessage } from '../../../api/httpClient.js'
 import { formatDateTime, titleCase } from '../../../utils/format.js'
 import { notificationsApi } from './notifications.api.js'
 import SendNotificationModal from './components/SendNotificationModal.jsx'
+import SendTargetedNotificationModal from './components/SendTargetedNotificationModal.jsx'
 import {
   NOTIFICATIONS_CHANGED,
   announceNotificationsChanged,
@@ -30,6 +31,7 @@ export default function NotificationsPage() {
   const [filter, setFilter] = useState('all')
   const [page, setPage] = useState(1)
   const [sendOpen, setSendOpen] = useState(false)
+  const [targetedOpen, setTargetedOpen] = useState(false)
   const [markingAll, setMarkingAll] = useState(false)
 
   const { data, setData, loading, error, reload } = useFetch(
@@ -82,10 +84,16 @@ export default function NotificationsPage() {
       title="Notifications"
       subtitle="Your inbox"
       actions={
-        <Button variant="secondary" icon={Send} onClick={() => setSendOpen(true)}>
-          <span className="hidden sm:inline">Send notification</span>
-          <span className="sm:hidden">Send</span>
-        </Button>
+        <div className="flex items-center gap-2">
+          <Button variant="secondary" icon={Users} onClick={() => setTargetedOpen(true)}>
+            <span className="hidden sm:inline">Send to students</span>
+            <span className="sm:hidden">Students</span>
+          </Button>
+          <Button variant="secondary" icon={Send} onClick={() => setSendOpen(true)}>
+            <span className="hidden sm:inline">Send notification</span>
+            <span className="sm:hidden">Send</span>
+          </Button>
+        </div>
       }
     >
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-5">
@@ -144,6 +152,11 @@ export default function NotificationsPage() {
       {!loading && !error && data && <Pagination page={data.page} totalPages={data.totalPages} total={data.total} onChange={setPage} />}
 
       <SendNotificationModal open={sendOpen} onClose={() => setSendOpen(false)} onSent={() => notify('Notification sent.', 'success')} />
+      <SendTargetedNotificationModal
+        open={targetedOpen}
+        onClose={() => setTargetedOpen(false)}
+        onSent={(result) => notify(`Notification sent to ${result?.sent ?? ''} parent${result?.sent !== 1 ? 's' : ''}.`, 'success')}
+      />
     </AppShell>
   )
 }

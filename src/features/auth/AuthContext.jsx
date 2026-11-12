@@ -102,6 +102,14 @@ export function AuthProvider({ children }) {
     return loggedInUser
   }, [fetchPermissions])
 
+  const updateUser = useCallback((patch) => {
+    setUser((prev) => {
+      const next = { ...prev, ...patch }
+      tokenStorage.setUser(next)
+      return next
+    })
+  }, [])
+
   const logout = useCallback(async () => {
     const refreshToken = tokenStorage.getRefreshToken()
     try {
@@ -113,7 +121,7 @@ export function AuthProvider({ children }) {
   }, [clearSession])
 
   return (
-    <AuthContext.Provider value={{ user, ready, login, logout, permissions, isSuperAdmin, permissionsLoading, refetchPermissions: () => fetchPermissions(user?.id) }}>
+    <AuthContext.Provider value={{ user, ready, login, logout, updateUser, permissions, isSuperAdmin, permissionsLoading, refetchPermissions: () => fetchPermissions(user?.id) }}>
       {children}
     </AuthContext.Provider>
   )

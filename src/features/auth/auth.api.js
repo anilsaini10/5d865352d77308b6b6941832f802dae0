@@ -52,4 +52,14 @@ export const authApi = {
   getPermissions() {
     return httpClient.get('/auth/permissions').then((res) => res.data.data)
   },
+
+  uploadProfilePhoto(file) {
+    const formData = new FormData()
+    formData.append('profilePhoto', file)
+    return httpClient
+      .patch('/auth/profile-photo', formData, {
+        headers: { 'Content-Type': 'multipart/form-data' },
+      })
+      .then((res) => res.data.data.user)
+  },
 }
