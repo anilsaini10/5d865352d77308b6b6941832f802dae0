@@ -2,7 +2,7 @@ import {
   LayoutDashboard, School, Users, Layers, BookOpen, GraduationCap, UserSquare2, BriefcaseBusiness,
   CalendarClock, ClipboardList, CalendarOff, Megaphone, CalendarDays, Bell, Settings, LifeBuoy, Inbox, CalendarRange, Puzzle, KeyRound, CreditCard, Receipt, Sparkles,
   BarChart3, ShieldCheck, UserPlus, LogOut, Home, ShieldHalf, UserRound,
-  FileText, ListChecks, ClipboardCheck, Bug,
+  FileText, ListChecks, ClipboardCheck, Bug, Wallet, IndianRupee, ArrowUpCircle, ClipboardPen, History,
 } from 'lucide-react'
 import { ROLES } from '../features/auth/roles.js'
 import { P } from '../constants/permissions.js'
@@ -60,8 +60,17 @@ export const NAV_BY_ROLE = {
         { to: '/students', label: 'Students', icon: GraduationCap, alsoActive: ['/attendance'], permission: P.STUDENTS_VIEW },
         { to: '/teachers', label: 'Teachers', icon: UserSquare2, alsoActive: ['/teacher-attendance', '/teacher-availability'], permission: P.TEACHERS_VIEW },
         { to: '/staff', label: 'Staff', icon: BriefcaseBusiness, permission: P.STAFF_VIEW },
+        { to: '/admissions', label: 'Admissions', icon: ClipboardPen, alsoActive: ['/admissions'] },
         { to: '/role-accounts', label: 'Role Accounts', icon: UserPlus, permission: P.ROLE_ACCOUNTS_VIEW },
         { to: '/role-permissions', label: 'Role Permissions', icon: ShieldHalf, permission: P.ROLE_PERMISSIONS },
+      ],
+    },
+    {
+      title: 'Promotions',
+      items: [
+        { to: '/academic-sessions', label: 'Academic Sessions', icon: CalendarRange },
+        { to: '/promotions', label: 'Promote Students', icon: ArrowUpCircle },
+        { to: '/promotions/history', label: 'Promotion History', icon: History },
       ],
     },
     {
@@ -95,6 +104,13 @@ export const NAV_BY_ROLE = {
         { to: '/announcements', label: 'Announcements', icon: Megaphone, permission: P.ANNOUNCEMENTS_VIEW },
         { to: '/events', label: 'Events', icon: CalendarDays, permission: P.EVENTS_VIEW },
         { to: '/notifications', label: 'Notifications', icon: Bell, permission: P.NOTIFICATIONS_VIEW },
+      ],
+    },
+    {
+      title: 'Finance',
+      items: [
+        { to: '/salary', label: 'Salary', icon: Wallet, permission: P.SALARY_VIEW },
+        { to: '/fees', label: 'Fees', icon: IndianRupee, permission: P.FEES_VIEW },
       ],
     },
     {

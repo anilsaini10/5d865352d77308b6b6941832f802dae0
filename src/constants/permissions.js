@@ -64,12 +64,15 @@ export const P = {
 
   // Fees
   FEES_MODULE: 'feesModule',
+  FEES_VIEW: 'feesView',
   FEES_COLLECT: 'feesCollect',
   RECEIPT_PRINT: 'receiptPrint',
   MAX_DISCOUNT_PERCENT: 'maxDiscountPercent',
+  FEES_REMINDER: 'feesReminder',
 
   // Salary
   SALARY_VIEW: 'salaryView',
+  SALARY_GENERATE: 'salaryGenerate',
 
   // Settings
   SCHOOL_SETTINGS: 'schoolSettings',
@@ -86,6 +89,18 @@ export const P = {
   SYLLABUS_DELAYED_VIEW: 'syllabusDelayedView',
   SYLLABUS_APPROVAL_VIEW: 'syllabusApprovalView',
   SYLLABUS_APPROVAL_MANAGE: 'syllabusApprovalManage',
+
+  // Academic Sessions
+  ACADEMIC_SESSIONS_VIEW: 'academicSessionsView',
+  ACADEMIC_SESSIONS_MANAGE: 'academicSessionsManage',
+
+  // Promotions
+  PROMOTIONS_VIEW: 'promotionsView',
+  PROMOTIONS_MANAGE: 'promotionsManage',
+
+  // Admissions
+  ADMISSIONS_VIEW: 'admissionsView',
+  ADMISSIONS_MANAGE: 'admissionsManage',
 
   // School-level modules (used in SCHOOL_PERMISSIONS)
   ATTENDANCE_MODULE: 'attendanceModule',
