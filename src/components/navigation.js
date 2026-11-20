@@ -11,6 +11,7 @@ import { P } from '../constants/permissions.js'
 // An item may set `feature: '<entitlement key>'` to show a lock icon while that feature is locked
 // (pair it with <AppShell feature="<key>"> on the page itself).
 // An item may set `permission: '<key>'` to hide it when the user lacks that permission.
+// A group with a `title` and `icon` renders as a collapsible section in the sidebar.
 export const NAV_BY_ROLE = {
   [ROLES.SUPER_ADMIN]: [
     {
@@ -26,6 +27,7 @@ export const NAV_BY_ROLE = {
     },
     {
       title: 'Subscriptions',
+      icon: CreditCard,
       items: [
         { to: '/features', label: 'Features', icon: Puzzle },
         { to: '/plans', label: 'Plans', icon: CreditCard },
@@ -34,6 +36,7 @@ export const NAV_BY_ROLE = {
     },
     {
       title: 'Settings',
+      icon: Settings,
       items: [
         { to: '/profile', label: 'Profile', icon: UserRound },
         { to: '/help', label: 'Help & Support', icon: LifeBuoy },
@@ -46,6 +49,7 @@ export const NAV_BY_ROLE = {
     },
     {
       title: 'Academics',
+      icon: BookOpen,
       items: [
         { to: '/classes', label: 'Classes', icon: Layers, permission: P.CLASSES_VIEW },
         { to: '/subjects', label: 'Subjects', icon: BookOpen, permission: P.SUBJECTS_VIEW },
@@ -56,6 +60,7 @@ export const NAV_BY_ROLE = {
     },
     {
       title: 'People',
+      icon: Users,
       items: [
         { to: '/students', label: 'Students', icon: GraduationCap, alsoActive: ['/attendance'], permission: P.STUDENTS_VIEW },
         { to: '/teachers', label: 'Teachers', icon: UserSquare2, alsoActive: ['/teacher-attendance', '/teacher-availability'], permission: P.TEACHERS_VIEW },
@@ -67,6 +72,7 @@ export const NAV_BY_ROLE = {
     },
     {
       title: 'Promotions',
+      icon: ArrowUpCircle,
       items: [
         { to: '/academic-sessions', label: 'Academic Sessions', icon: CalendarRange },
         { to: '/promotions', label: 'Promote Students', icon: ArrowUpCircle },
@@ -75,6 +81,7 @@ export const NAV_BY_ROLE = {
     },
     {
       title: 'Syllabus',
+      icon: FileText,
       items: [
         { to: '/syllabus', label: 'Dashboard', icon: BarChart3, end: true, permission: P.SYLLABUS_DASHBOARD_VIEW },
         { to: '/syllabus/chapters', label: 'Chapters', icon: BookOpen, permission: P.SYLLABUS_CHAPTER_VIEW },
@@ -87,12 +94,14 @@ export const NAV_BY_ROLE = {
     },
     {
       title: 'Analytics',
+      icon: BarChart3,
       items: [
         { to: '/analytics', label: 'Analytics', icon: BarChart3, alsoActive: ['/analytics'], permission: P.REPORTS_VIEW },
       ],
     },
     {
       title: 'Requests',
+      icon: Inbox,
       items: [
         { to: '/leave', label: 'Leave requests', icon: CalendarOff, permission: P.LEAVE_VIEW },
         { to: '/recovery-requests', label: 'Recovery Requests', icon: KeyRound, badge: 'recoveryPending', permission: P.RECOVERY_VIEW },
@@ -100,6 +109,7 @@ export const NAV_BY_ROLE = {
     },
     {
       title: 'Communication',
+      icon: Megaphone,
       items: [
         { to: '/announcements', label: 'Announcements', icon: Megaphone, permission: P.ANNOUNCEMENTS_VIEW },
         { to: '/events', label: 'Events', icon: CalendarDays, permission: P.EVENTS_VIEW },
@@ -108,6 +118,7 @@ export const NAV_BY_ROLE = {
     },
     {
       title: 'Finance',
+      icon: Wallet,
       items: [
         { to: '/salary', label: 'Salary', icon: Wallet, permission: P.SALARY_VIEW },
         { to: '/fees', label: 'Fees', icon: IndianRupee, permission: P.FEES_VIEW },
@@ -115,6 +126,7 @@ export const NAV_BY_ROLE = {
     },
     {
       title: 'Billing',
+      icon: CreditCard,
       items: [
         { to: '/billing/plans', label: 'Plans & pricing', icon: Sparkles },
         { to: '/billing/subscriptions', label: 'My subscriptions', icon: Receipt },
@@ -122,6 +134,7 @@ export const NAV_BY_ROLE = {
     },
     {
       title: 'Settings',
+      icon: Settings,
       items: [
         { to: '/profile', label: 'Profile', icon: UserRound },
         { to: '/school', label: 'School settings', icon: Settings, permission: P.SCHOOL_SETTINGS },
@@ -137,6 +150,7 @@ export const NAV_BY_ROLE = {
     },
     {
       title: 'Settings',
+      icon: Settings,
       items: [
         { to: '/profile', label: 'Profile', icon: UserRound },
       ],

@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { Modal, Field, inputClass, Alert, FormActions } from '../../../../components/ui.jsx'
 import { getErrorMessage } from '../../../../api/httpClient.js'
-import { feesApi } from '../fees.api.js'
+import { notificationsApi } from '../../notifications/notifications.api.js'
 
 const TITLE_MAX = 200
 const DESC_MAX = 2000
@@ -31,7 +31,7 @@ export default function FeeReminderModal({ studentIds, onClose, onSent }) {
 
     setSubmitting(true)
     try {
-      await feesApi.sendReminder({ studentIds, title: title.trim(), description: description.trim() })
+      await notificationsApi.sendTargeted({ studentIds, title: title.trim(), description: description.trim() })
       onSent()
     } catch (err) {
       setServerError(getErrorMessage(err, 'Could not send reminder.'))
