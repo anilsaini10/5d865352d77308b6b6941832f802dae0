@@ -136,15 +136,15 @@ export default function SalaryPage() {
                 <tbody>
                   {records.map((r) => (
                     <Tr key={r.id}>
-                      <Td bold>{r.name}</Td>
-                      <Td muted>{r.employeeId}</Td>
-                      <Td muted>{r.role ?? '—'}</Td>
+                      <Td bold>{r.employee?.name ?? '—'}</Td>
+                      <Td muted>{r.employee?.code ?? '—'}</Td>
+                      <Td muted>{r.employee?.type ?? '—'}</Td>
                       <Td align="right">{formatCurrency(r.baseSalary)}</Td>
-                      <Td align="right" className="text-coral">{formatCurrency(r.deductions ?? 0)}</Td>
-                      <Td align="right" bold>{formatCurrency(r.netPay)}</Td>
+                      <Td align="right" className="text-coral">{formatCurrency(r.totalDeductions ?? 0)}</Td>
+                      <Td align="right" bold>{formatCurrency(r.netAmount)}</Td>
                       <Td>
-                        <Badge tone={r.status === 'PAID' ? 'active' : 'neutral'}>
-                          {r.status ?? 'Pending'}
+                        <Badge tone={r.status === 'CREDITED' ? 'active' : r.status === 'ON_HOLD' ? 'warning' : 'neutral'}>
+                          {r.status}
                         </Badge>
                       </Td>
                     </Tr>
