@@ -2,6 +2,7 @@ import { lazy, Suspense } from 'react'
 import { Route, Routes } from 'react-router-dom'
 import ProtectedRoute from './routes/ProtectedRoute.jsx'
 import LoginPage from './features/auth/LoginPage.jsx'
+import SignupPage from './features/auth/SignupPage.jsx'
 import ForgotPasswordPage from './features/auth/ForgotPasswordPage.jsx'
 import LandingPage from './features/landing/LandingPage.jsx'
 import { useAuth } from './features/auth/AuthContext.jsx'
@@ -32,6 +33,7 @@ export default function App() {
     <Routes>
       <Route path="/welcome" element={<LandingPage />} />
       <Route path="/login" element={<LoginPage />} />
+      <Route path="/signup" element={<SignupPage />} />
       <Route path="/forgot-password" element={<ForgotPasswordPage />} />
       <Route
         path="/*"

@@ -11,6 +11,12 @@ export const authApi = {
       .then((res) => res.data.data)
   },
 
+  signup({ name, email, phone, password, schoolName }) {
+    return httpClient
+      .post('/auth/signup', { name, email, phone, password, schoolName })
+      .then((res) => res.data.data)
+  },
+
   searchSchools(search) {
     return httpClient
       .get('/schools', { params: { search: search || undefined } })

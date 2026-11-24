@@ -94,7 +94,7 @@ function Navbar() {
             Login
           </button>
           <button
-            onClick={() => navigate('/login')}
+            onClick={() => navigate('/signup')}
             className="text-sm font-semibold bg-board hover:bg-board-light text-paper rounded-lg px-5 py-2.5 transition-colors"
           >
             Sign Up
@@ -426,7 +426,7 @@ export default function LandingPage() {
               From attendance to report cards, fees to timetables — one platform that brings your entire school online. Built for Indian schools.
             </p>
             <div className="flex flex-wrap gap-3 mt-8">
-              <button onClick={() => navigate('/login')} className="flex items-center gap-2 bg-board hover:bg-board-light text-paper font-semibold text-sm rounded-lg px-6 py-3 transition-colors">
+              <button onClick={() => navigate('/signup')} className="flex items-center gap-2 bg-board hover:bg-board-light text-paper font-semibold text-sm rounded-lg px-6 py-3 transition-colors">
                 Get Started <ArrowRight size={16} />
               </button>
               <a href="#schools" className="flex items-center gap-2 border border-line hover:border-board/30 text-ink font-semibold text-sm rounded-lg px-6 py-3 transition-colors">
