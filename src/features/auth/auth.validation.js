@@ -21,6 +21,21 @@ export function validateLoginForm({ identifier, password }) {
   return errors
 }
 
+const PHONE_PATTERN = /^\d{10}$/
+
+export function validateSignupForm({ name, email, phone, password, confirmPassword, schoolName }) {
+  const errors = {}
+  if (!name?.trim()) errors.name = 'Enter your name.'
+  if (!EMAIL_PATTERN.test(email?.trim() ?? '')) errors.email = 'Enter a valid email address.'
+  if (!PHONE_PATTERN.test(phone?.trim() ?? '')) errors.phone = 'Enter a valid 10-digit mobile number.'
+  if (!password || password.length < PASSWORD_MIN || password.length > PASSWORD_MAX) {
+    errors.password = `Password must be ${PASSWORD_MIN}-${PASSWORD_MAX} characters.`
+  }
+  if (password !== confirmPassword) errors.confirmPassword = 'Passwords do not match.'
+  if (!schoolName?.trim()) errors.schoolName = 'Enter your school name.'
+  return errors
+}
+
 export function validateChangePasswordForm({ currentPassword, newPassword, confirmPassword }) {
   const errors = {}
   if (!currentPassword) errors.currentPassword = 'Current password is required.'

@@ -102,6 +102,15 @@ export function AuthProvider({ children }) {
     return loggedInUser
   }, [fetchPermissions])
 
+  const signup = useCallback(async (payload) => {
+    const { user: newUser, tokens } = await authApi.signup(payload)
+    tokenStorage.setTokens(tokens)
+    tokenStorage.setUser(newUser)
+    setUser(newUser)
+    fetchPermissions(newUser.id)
+    return newUser
+  }, [fetchPermissions])
+
   const updateUser = useCallback((patch) => {
     setUser((prev) => {
       const next = { ...prev, ...patch }
@@ -121,7 +130,7 @@ export function AuthProvider({ children }) {
   }, [clearSession])
 
   return (
-    <AuthContext.Provider value={{ user, ready, login, logout, updateUser, permissions, isSuperAdmin, permissionsLoading, refetchPermissions: () => fetchPermissions(user?.id) }}>
+    <AuthContext.Provider value={{ user, ready, login, signup, logout, updateUser, permissions, isSuperAdmin, permissionsLoading, refetchPermissions: () => fetchPermissions(user?.id) }}>
       {children}
     </AuthContext.Provider>
   )
