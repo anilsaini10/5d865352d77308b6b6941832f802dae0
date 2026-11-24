@@ -3,6 +3,7 @@ import { Route, Routes } from 'react-router-dom'
 import ProtectedRoute from './routes/ProtectedRoute.jsx'
 import LoginPage from './features/auth/LoginPage.jsx'
 import ForgotPasswordPage from './features/auth/ForgotPasswordPage.jsx'
+import LandingPage from './features/landing/LandingPage.jsx'
 import { useAuth } from './features/auth/AuthContext.jsx'
 import { ROLES } from './features/auth/roles.js'
 import { PageLoader } from './components/ui.jsx'
@@ -29,6 +30,7 @@ function RoleRoutes() {
 export default function App() {
   return (
     <Routes>
+      <Route path="/welcome" element={<LandingPage />} />
       <Route path="/login" element={<LoginPage />} />
       <Route path="/forgot-password" element={<ForgotPasswordPage />} />
       <Route

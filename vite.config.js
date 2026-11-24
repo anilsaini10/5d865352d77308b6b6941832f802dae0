@@ -21,7 +21,7 @@ export default defineConfig(({ command, mode }) => {
     plugins: [react()],
     define: proxyRemote ? { 'import.meta.env.VITE_API_BASE_URL': JSON.stringify(pathname) } : {},
     server: {
-      headers: securityHeaders,
+      headers: { 'Cache-Control': 'no-store' },
       ...(proxyRemote ? { proxy: { [pathname]: { target: origin, changeOrigin: true, secure: true } } } : {}),
     },
     preview: { headers: securityHeaders },

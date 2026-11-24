@@ -27,4 +27,9 @@ export const notificationsApi = {
   send(body) {
     return httpClient.post('/notifications/send', body).then(unwrap)
   },
+
+  /** ADMIN/STAFF — push to parents of selected students. */
+  sendTargeted({ studentIds, title, description }) {
+    return httpClient.post('/notifications/send-targeted', { studentIds, title, description }).then(unwrap)
+  },
 }

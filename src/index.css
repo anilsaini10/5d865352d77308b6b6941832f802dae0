@@ -86,3 +86,7 @@ body {
 .rich-content blockquote { border-left: 3px solid rgb(var(--c-line-strong)); padding-left: 0.75rem; margin: 0.4rem 0; opacity: 0.8; }
 .rich-content a { text-decoration: underline; color: rgb(var(--c-board)); }
 .rich-editor:empty::before { content: attr(data-placeholder); opacity: 0.35; pointer-events: none; }
+
+/* Hide scrollbar but keep scrolling */
+.scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
+.scrollbar-hide::-webkit-scrollbar { display: none; }

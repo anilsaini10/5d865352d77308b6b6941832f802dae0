@@ -12,6 +12,7 @@ import PlanDetailPage from '../features/subscription/plans/PlanDetailPage.jsx'
 import SubscriptionsPage from '../features/subscription/subscriptions/SubscriptionsPage.jsx'
 import RolesPage from '../features/roles/RolesPage.jsx'
 import SuperAdminRolePermissionsPage from '../features/schools/SuperAdminRolePermissionsPage.jsx'
+import CrashReportsPage from '../features/crashReports/CrashReportsPage.jsx'
 
 export default function SuperAdminRoutes() {
   return (
@@ -29,6 +30,7 @@ export default function SuperAdminRoutes() {
       <Route path="/subscriptions" element={<SubscriptionsPage />} />
       <Route path="/profile" element={<ProfilePage />} />
       <Route path="/support" element={<SupportInboxPage />} />
+      <Route path="/crash-reports" element={<CrashReportsPage />} />
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   )

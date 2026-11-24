@@ -170,9 +170,9 @@ function RoleSelect({ schoolId, value, onChange, error }) {
     <Field label="Role" required error={displayError}>
       <div className="relative">
         <select
-          value={value?.customRoleId || ''}
+          value={value?.id || ''}
           onChange={(e) => {
-            const found = roles.find((r) => r.customRoleId === e.target.value)
+            const found = roles.find((r) => r?.id === e?.target?.value)
             onChange(found || null)
           }}
           disabled={loading || noRoles || !!fetchError}
@@ -180,7 +180,7 @@ function RoleSelect({ schoolId, value, onChange, error }) {
         >
           <option value="" disabled>{loading ? 'Loading roles...' : 'Select role'}</option>
           {roles.map((r) => (
-            <option key={r.customRoleId} value={r.customRoleId}>{r.name}</option>
+            <option key={r?.id} value={r?.id}>{r?.name}</option>
           ))}
         </select>
         {loading && <Loader2 size={15} className="absolute right-3.5 top-1/2 -translate-y-1/2 text-ink/35 animate-spin pointer-events-none" />}
@@ -249,7 +249,7 @@ export default function LoginPage() {
 
     const apiRole = isOther ? ROLES.STAFF : loginType
     const schoolId = isOther ? school.id : undefined
-    const customRoleId = isOther ? selectedRole.customRoleId : undefined
+    const customRoleId = isOther ? selectedRole.id : undefined
 
     setSubmitting(true)
     try {

@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Plus, UserSquare2, Pencil, Trash2, RotateCcw, KeyRound } from 'lucide-react'
+import { Plus, UserSquare2, Pencil, Trash2, RotateCcw, KeyRound, Upload } from 'lucide-react'
 import AppShell from '../../../components/AppShell.jsx'
 import Pagination from '../../../components/Pagination.jsx'
 import {
@@ -20,6 +20,7 @@ import { teachersApi } from './teachers.api.js'
 import TeacherFormModal from './components/TeacherFormModal.jsx'
 import { DeleteTeacherDialog } from './components/TeacherDialogs.jsx'
 import { useSubjects } from './components/useSubjects.js'
+import BulkTeacherUploadModal from './components/BulkTeacherUploadModal.jsx'
 
 const PAGE_SIZE = 15
 
@@ -41,6 +42,7 @@ export default function TeachersPage() {
   const [justCreated, setJustCreated] = useState(null)
   const [deleteTarget, setDeleteTarget] = useState(null)
   const [resetTarget, setResetTarget] = useState(null)
+  const [bulkUploadOpen, setBulkUploadOpen] = useState(false)
 
   useEffect(() => {
     setPage(1)
@@ -92,7 +94,12 @@ export default function TeachersPage() {
     <AppShell
       title="Teachers"
       subtitle="Teaching staff, their subjects and class responsibilities"
-      actions={<Button icon={Plus} onClick={() => setFormModal({})}>Add teacher</Button>}
+      actions={
+        <div className="flex items-center gap-2">
+          <Button variant="secondary" icon={Upload} onClick={() => setBulkUploadOpen(true)}>Bulk upload</Button>
+          <Button icon={Plus} onClick={() => setFormModal({})}>Add teacher</Button>
+        </div>
+      }
     >
       {justCreated && (
         <CredentialsBanner
@@ -212,6 +219,18 @@ export default function TeachersPage() {
 
       <ResetPasswordDialog target={resetTarget} request={usersApi.resetPassword} onClose={() => setResetTarget(null)} onStale={reload} />
       <DeleteTeacherDialog teacher={deleteTarget} onClose={() => setDeleteTarget(null)} onConfirm={confirmDelete} />
+
+      <BulkTeacherUploadModal
+        open={bulkUploadOpen}
+        onClose={() => setBulkUploadOpen(false)}
+        onDone={(count) => {
+          if (count > 0) {
+            notify(`${count} teacher${count !== 1 ? 's' : ''} uploaded successfully.`, 'success')
+            reload()
+            reloadClasses()
+          }
+        }}
+      />
     </AppShell>
   )
 }

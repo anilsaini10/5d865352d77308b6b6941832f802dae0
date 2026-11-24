@@ -31,6 +31,8 @@ import HomeworkAnalyticsPage from '../features/admin/analytics/HomeworkAnalytics
 import ComparisonsAnalyticsPage from '../features/admin/analytics/ComparisonsAnalyticsPage.jsx'
 import AlertsAnalyticsPage from '../features/admin/analytics/AlertsAnalyticsPage.jsx'
 import InterventionsAnalyticsPage from '../features/admin/analytics/InterventionsAnalyticsPage.jsx'
+import SalaryPage from '../features/admin/salary/SalaryPage.jsx'
+import FeesPage from '../features/admin/fees/FeesPage.jsx'
 import PlansPage from '../features/admin/billing/PlansPage.jsx'
 import SubscriptionsPage from '../features/admin/billing/SubscriptionsPage.jsx'
 import RoleAccountsPage from '../features/admin/roleAccounts/RoleAccountsPage.jsx'
@@ -44,6 +46,12 @@ import ClassProgressPage from '../features/admin/syllabus/ClassProgressPage.jsx'
 import TeacherProgressPage from '../features/admin/syllabus/TeacherProgressPage.jsx'
 import DelayedChaptersPage from '../features/admin/syllabus/DelayedChaptersPage.jsx'
 import ApprovalsPage from '../features/admin/syllabus/ApprovalsPage.jsx'
+import AcademicSessionsPage from '../features/admin/academicSessions/AcademicSessionsPage.jsx'
+import PromotionsPage from '../features/admin/promotions/PromotionsPage.jsx'
+import PromotionHistoryPage from '../features/admin/promotions/PromotionHistoryPage.jsx'
+import AdmissionsPage from '../features/admin/admissions/AdmissionsPage.jsx'
+import AdmissionFormPage from '../features/admin/admissions/AdmissionFormPage.jsx'
+import AdmissionDetailPage from '../features/admin/admissions/AdmissionDetailPage.jsx'
 import PermissionRoute from '../components/PermissionRoute.jsx'
 import { P } from '../constants/permissions.js'
 import { EntitlementsProvider } from '../features/admin/billing/EntitlementsContext.jsx'
@@ -97,6 +105,14 @@ export default function AdminRoutes() {
         <Route path="/syllabus/reports/teacher" element={<PermissionRoute perm={P.SYLLABUS_TEACHER_PROGRESS_VIEW}><TeacherProgressPage /></PermissionRoute>} />
         <Route path="/syllabus/reports/delayed" element={<PermissionRoute perm={P.SYLLABUS_DELAYED_VIEW}><DelayedChaptersPage /></PermissionRoute>} />
         <Route path="/syllabus/approvals" element={<PermissionRoute perm={P.SYLLABUS_APPROVAL_VIEW}><ApprovalsPage /></PermissionRoute>} />
+        <Route path="/academic-sessions" element={<AcademicSessionsPage />} />
+        <Route path="/promotions" element={<PromotionsPage />} />
+        <Route path="/promotions/history" element={<PromotionHistoryPage />} />
+        <Route path="/admissions" element={<AdmissionsPage />} />
+        <Route path="/admissions/new" element={<AdmissionFormPage />} />
+        <Route path="/admissions/:id" element={<AdmissionDetailPage />} />
+        <Route path="/salary" element={<PermissionRoute perm={P.SALARY_VIEW}><SalaryPage /></PermissionRoute>} />
+        <Route path="/fees" element={<PermissionRoute perm={P.FEES_VIEW}><FeesPage /></PermissionRoute>} />
         <Route path="/billing/plans" element={<PlansPage />} />
         <Route path="/billing/subscriptions" element={<SubscriptionsPage />} />
         <Route path="*" element={<Navigate to="/" replace />} />

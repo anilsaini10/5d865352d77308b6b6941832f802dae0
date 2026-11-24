@@ -17,7 +17,7 @@ export default function TrialBanner() {
   const [dismissed, setDismissed] = useState(dismissedToday)
 
   const trial = [...trials].sort((a, b) => (a.daysLeft ?? 0) - (b.daysLeft ?? 0))[0]
-  if (!trial || dismissed) return null
+  if (!trial || dismissed || (trial.daysLeft != null && trial.daysLeft > 3)) return null
 
   const dismiss = () => {
     try { localStorage.setItem(TRIAL_BANNER_KEY, todayInput()) } catch { /* private mode: just hide for now */ }
