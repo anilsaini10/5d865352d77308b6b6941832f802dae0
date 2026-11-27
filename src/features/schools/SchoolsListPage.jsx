@@ -1,12 +1,13 @@
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Plus, Search, School as SchoolIcon, Loader2 } from 'lucide-react'
+import { Plus, School as SchoolIcon } from 'lucide-react'
 import AppShell from '../../components/AppShell.jsx'
 import Pagination from '../../components/Pagination.jsx'
-import { EmptyState } from '../../components/ui.jsx'
+import { AsyncContent, EmptyState, SearchInput } from '../../components/ui.jsx'
+import { useFetch } from '../../hooks/useFetch.js'
+import { useDebouncedValue } from '../../hooks/useDebouncedValue.js'
 import { schoolsApi } from './schools.api.js'
 import { BOARD_LABELS } from './schools.types.js'
-import { getErrorMessage } from '../../api/httpClient.js'
 
 const PAGE_SIZE = 20
 
@@ -16,45 +17,24 @@ function formatDate(iso) {
 
 export default function SchoolsListPage() {
   const navigate = useNavigate()
-
-  const [items, setItems] = useState([])
-  const [page, setPage] = useState(1)
-  const [totalPages, setTotalPages] = useState(1)
-  const [total, setTotal] = useState(0)
   const [search, setSearch] = useState('')
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState('')
+  const [page, setPage] = useState(1)
+  const debouncedSearch = useDebouncedValue(search)
 
-  useEffect(() => {
-    const timer = setTimeout(() => setPage(1), 300)
-    return () => clearTimeout(timer)
-  }, [search])
+  const { data, loading, error } = useFetch(
+    () => schoolsApi.list({ page, pageSize: PAGE_SIZE, search: debouncedSearch }),
+    [page, debouncedSearch],
+    { errorMessage: 'Could not load schools.' },
+  )
 
-  useEffect(() => {
-    let cancelled = false
-    setLoading(true)
-    setError('')
+  const items = data?.items ?? []
+  const totalPages = data?.totalPages ?? 1
+  const total = data?.total ?? 0
 
-    schoolsApi
-      .list({ page, pageSize: PAGE_SIZE, search })
-      .then((data) => {
-        if (cancelled) return
-        setItems(data.items)
-        setTotalPages(data.totalPages || 1)
-        setTotal(data.total || 0)
-      })
-      .catch((err) => {
-        if (cancelled) return
-        setError(getErrorMessage(err, 'Could not load schools.'))
-      })
-      .finally(() => {
-        if (!cancelled) setLoading(false)
-      })
-
-    return () => {
-      cancelled = true
-    }
-  }, [page, search])
+  const changeSearch = (v) => {
+    setSearch(v)
+    setPage(1)
+  }
 
   return (
     <AppShell
@@ -69,40 +49,33 @@ export default function SchoolsListPage() {
         </button>
       }
     >
-      <div className="relative mb-5 max-w-sm">
-        <Search size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-ink/35" />
-        <input
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          placeholder="Search by name or city..."
-          className="w-full rounded-lg border border-line bg-surface pl-10 pr-3.5 py-2.5 text-sm text-ink placeholder:text-ink/35 focus:border-board focus:ring-2 focus:ring-board/15 outline-none transition-shadow"
-        />
+      <div className="mb-5 max-w-sm">
+        <SearchInput value={search} onChange={changeSearch} placeholder="Search by name or city..." />
       </div>
 
       <div className="bg-surface border border-line rounded-2xl shadow-card overflow-hidden">
-        {loading ? (
-          <div className="flex items-center justify-center py-16 text-ink/40">
-            <Loader2 size={22} className="animate-spin" />
-          </div>
-        ) : error ? (
-          <div className="p-6 text-sm text-coral font-medium">{error}</div>
-        ) : items.length === 0 ? (
-          <EmptyState
-            icon={SchoolIcon}
-            title={total === 0 && !search ? 'No schools yet' : 'No matches'}
-            message={total === 0 && !search ? 'Register your first school to get started.' : 'Try a different search term.'}
-            action={
-              total === 0 && !search && (
-                <button
-                  onClick={() => navigate('/schools/new')}
-                  className="flex items-center gap-1.5 bg-board text-paper text-sm font-semibold px-4 py-2.5 rounded-lg"
-                >
-                  <Plus size={16} /> Add school
-                </button>
-              )
-            }
-          />
-        ) : (
+        <AsyncContent
+          loading={loading}
+          error={error}
+          empty={items.length === 0}
+          emptyState={
+            <EmptyState
+              icon={SchoolIcon}
+              title={total === 0 && !debouncedSearch ? 'No schools yet' : 'No matches'}
+              message={total === 0 && !debouncedSearch ? 'Register your first school to get started.' : 'Try a different search term.'}
+              action={
+                total === 0 && !debouncedSearch && (
+                  <button
+                    onClick={() => navigate('/schools/new')}
+                    className="flex items-center gap-1.5 bg-board text-paper text-sm font-semibold px-4 py-2.5 rounded-lg"
+                  >
+                    <Plus size={16} /> Add school
+                  </button>
+                )
+              }
+            />
+          }
+        >
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b border-line text-left text-xs uppercase tracking-wide text-ink/45">
@@ -129,7 +102,7 @@ export default function SchoolsListPage() {
               ))}
             </tbody>
           </table>
-        )}
+        </AsyncContent>
       </div>
 
       {!loading && !error && items.length > 0 && (

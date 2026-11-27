@@ -8,7 +8,9 @@
     "dev:live": "vite --mode production",
     "build": "vite build",
     "build:local": "vite build --mode development",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "test": "vitest run",
+    "test:watch": "vitest"
   },
   "dependencies": {
     "axios": "^1.19.0",

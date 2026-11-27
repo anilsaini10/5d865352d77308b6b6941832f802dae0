@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import { GraduationCap } from 'lucide-react'
 import Pagination from '../../../components/Pagination.jsx'
 import { AsyncContent, Card, EmptyState, SearchInput, StatusFilter, Tabs } from '../../../components/ui.jsx'
@@ -25,8 +25,6 @@ export default function SchoolUsersTab({ schoolId }) {
 
   const debouncedSearch = useDebouncedValue(search)
 
-  useEffect(() => { setPage(1) }, [type, debouncedSearch, status])
-
   const {
     data: result,
     loading: usersLoading,
@@ -51,6 +49,17 @@ export default function SchoolUsersTab({ schoolId }) {
     setType(v)
     setSearch('')
     setStatus('ALL')
+    setPage(1)
+  }
+
+  const handleSearchChange = (v) => {
+    setSearch(v)
+    setPage(1)
+  }
+
+  const handleStatusChange = (v) => {
+    setStatus(v)
+    setPage(1)
   }
 
   return (
@@ -62,10 +71,10 @@ export default function SchoolUsersTab({ schoolId }) {
       <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 mb-5">
         <SearchInput
           value={search}
-          onChange={setSearch}
+          onChange={handleSearchChange}
           placeholder={`Search ${type}...`}
         />
-        <StatusFilter value={status} onChange={setStatus} inactiveLabel="Inactive" />
+        <StatusFilter value={status} onChange={handleStatusChange} inactiveLabel="Inactive" />
       </div>
 
       <Card className="overflow-hidden">

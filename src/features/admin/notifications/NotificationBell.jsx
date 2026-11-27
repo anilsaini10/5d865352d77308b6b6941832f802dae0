@@ -42,17 +42,24 @@ export default function NotificationBell() {
       .finally(() => setLoading(false))
   }, [])
 
+  const lastFocusFetchRef = useRef(0)
+  const throttledRefreshOnFocus = useCallback(() => {
+    if (Date.now() - lastFocusFetchRef.current < 15_000) return
+    lastFocusFetchRef.current = Date.now()
+    refreshCount()
+  }, [refreshCount])
+
   useEffect(() => {
     refreshCount()
     const timer = setInterval(refreshCount, POLL_MS)
-    window.addEventListener('focus', refreshCount)
+    window.addEventListener('focus', throttledRefreshOnFocus)
     window.addEventListener(NOTIFICATIONS_CHANGED, refreshCount)
     return () => {
       clearInterval(timer)
-      window.removeEventListener('focus', refreshCount)
+      window.removeEventListener('focus', throttledRefreshOnFocus)
       window.removeEventListener(NOTIFICATIONS_CHANGED, refreshCount)
     }
-  }, [refreshCount])
+  }, [refreshCount, throttledRefreshOnFocus])
 
   useEffect(() => {
     if (!open) return undefined

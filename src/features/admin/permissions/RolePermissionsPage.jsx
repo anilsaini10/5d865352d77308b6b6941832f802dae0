@@ -203,7 +203,8 @@ const VIEW_TABS = [
 
 export default function RolePermissionsPage() {
   const { notify } = useToast()
-  const { refetchPermissions } = useAuth()
+  const { user, refetchPermissions } = useAuth()
+  const currentUserRoleId = user?.customRoleId
 
   const [data, setData] = useState(null)
   const [loading, setLoading] = useState(true)
@@ -254,7 +255,7 @@ export default function RolePermissionsPage() {
         ...d,
         roles: d.roles.map((r) => (r.role.id === selectedRoleId ? updated : r)),
       }))
-      refetchPermissions()
+      if (selectedRoleId === currentUserRoleId) refetchPermissions()
     } catch (err) {
       if (getErrorCode(err) === 'ROLE_NOT_FOUND') {
         notify('This role was deactivated. Refreshing list.', 'error')
@@ -306,7 +307,7 @@ export default function RolePermissionsPage() {
         ...d,
         roles: d.roles.map((r) => (r.role.id === selectedRoleId ? updated : r)),
       }))
-      refetchPermissions()
+      if (selectedRoleId === currentUserRoleId) refetchPermissions()
     } catch (err) {
       setData((d) => ({
         ...d,
@@ -332,7 +333,7 @@ export default function RolePermissionsPage() {
         ...d,
         roles: d.roles.map((r) => (r.role.id === selectedRoleId ? updated : r)),
       }))
-      refetchPermissions()
+      if (selectedRoleId === currentUserRoleId) refetchPermissions()
       notify('All permissions cleared.', 'success')
     } catch (err) {
       notify(getErrorMessage(err, 'Could not clear permissions.'), 'error')
@@ -349,7 +350,7 @@ export default function RolePermissionsPage() {
         ...d,
         roles: d.roles.map((r) => (r.role.id === selectedRoleId ? updated : r)),
       }))
-      refetchPermissions()
+      if (selectedRoleId === currentUserRoleId) refetchPermissions()
       notify(`Copied permissions from ${source.role.name}.`, 'success')
       setCopySource(null)
     } catch (err) {

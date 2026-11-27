@@ -1,9 +1,10 @@
-import { useEffect, useState } from 'react'
+import { useMemo } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { School, Users, UserCheck, UserX, Plus, Loader2 } from 'lucide-react'
+import { School, Users, UserCheck, UserX, Plus } from 'lucide-react'
 import AppShell from '../../components/AppShell.jsx'
+import { AsyncContent } from '../../components/ui.jsx'
+import { useFetch } from '../../hooks/useFetch.js'
 import { fetchAdminsDirectory } from '../admins/adminsDirectory.api.js'
-import { getErrorMessage } from '../../api/httpClient.js'
 
 function StatTile({ icon: Icon, label, value, accent }) {
   const accents = {
@@ -26,38 +27,24 @@ function StatTile({ icon: Icon, label, value, accent }) {
 
 export default function DashboardPage() {
   const navigate = useNavigate()
-  const [stats, setStats] = useState(null)
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState('')
 
-  useEffect(() => {
-    let cancelled = false
-    setLoading(true)
-    setError('')
+  const { data, loading, error } = useFetch(
+    () => fetchAdminsDirectory(),
+    [],
+    { errorMessage: 'Could not load dashboard data.' },
+  )
 
-    fetchAdminsDirectory()
-      .then(({ schools, admins }) => {
-        if (cancelled) return
-        const activeAdmins = admins.filter((a) => a.isActive).length
-        setStats({
-          totalSchools: schools.length,
-          totalAdmins: admins.length,
-          activeAdmins,
-          inactiveAdmins: admins.length - activeAdmins,
-        })
-      })
-      .catch((err) => {
-        if (cancelled) return
-        setError(getErrorMessage(err, 'Could not load dashboard data.'))
-      })
-      .finally(() => {
-        if (!cancelled) setLoading(false)
-      })
-
-    return () => {
-      cancelled = true
+  const stats = useMemo(() => {
+    if (!data) return null
+    const { schools, admins } = data
+    const activeAdmins = admins.filter((a) => a.isActive).length
+    return {
+      totalSchools: schools.length,
+      totalAdmins: admins.length,
+      activeAdmins,
+      inactiveAdmins: admins.length - activeAdmins,
     }
-  }, [])
+  }, [data])
 
   return (
     <AppShell
@@ -72,20 +59,16 @@ export default function DashboardPage() {
         </button>
       }
     >
-      {loading ? (
-        <div className="flex items-center justify-center py-24 text-ink/40">
-          <Loader2 size={22} className="animate-spin" />
-        </div>
-      ) : error ? (
-        <p className="text-sm text-coral font-medium bg-coral/8 border border-coral/20 rounded-lg px-4 py-3">{error}</p>
-      ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          <StatTile icon={School} label="Total schools" value={stats.totalSchools} accent="board" />
-          <StatTile icon={Users} label="Total admins" value={stats.totalAdmins} accent="board" />
-          <StatTile icon={UserCheck} label="Active admins" value={stats.activeAdmins} accent="board" />
-          <StatTile icon={UserX} label="Inactive admins" value={stats.inactiveAdmins} accent="coral" />
-        </div>
-      )}
+      <AsyncContent loading={loading} error={error} empty={!stats}>
+        {stats && (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            <StatTile icon={School} label="Total schools" value={stats.totalSchools} accent="board" />
+            <StatTile icon={Users} label="Total admins" value={stats.totalAdmins} accent="board" />
+            <StatTile icon={UserCheck} label="Active admins" value={stats.activeAdmins} accent="board" />
+            <StatTile icon={UserX} label="Inactive admins" value={stats.inactiveAdmins} accent="coral" />
+          </div>
+        )}
+      </AsyncContent>
     </AppShell>
   )
 }

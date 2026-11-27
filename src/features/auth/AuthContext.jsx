@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useState, useCallback, useRef } from 'react'
+import { createContext, useContext, useEffect, useState, useCallback, useRef, useMemo } from 'react'
 import { authApi } from './auth.api.js'
 import { tokenStorage } from '../../api/tokenStorage.js'
 import { registerSessionExpiredHandler } from '../../api/httpClient.js'
@@ -137,8 +137,15 @@ export function AuthProvider({ children }) {
     clearSession()
   }, [clearSession])
 
+  const refetchPermissions = useCallback(() => fetchPermissions(user?.id), [fetchPermissions, user?.id])
+
+  const value = useMemo(() => ({
+    user, ready, login, loginWithResponse, signup, logout, updateUser,
+    permissions, isSuperAdmin, permissionsLoading, refetchPermissions,
+  }), [user, ready, login, loginWithResponse, signup, logout, updateUser, permissions, isSuperAdmin, permissionsLoading, refetchPermissions])
+
   return (
-    <AuthContext.Provider value={{ user, ready, login, loginWithResponse, signup, logout, updateUser, permissions, isSuperAdmin, permissionsLoading, refetchPermissions: () => fetchPermissions(user?.id) }}>
+    <AuthContext.Provider value={value}>
       {children}
     </AuthContext.Provider>
   )
