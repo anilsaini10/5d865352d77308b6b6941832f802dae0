@@ -29,6 +29,24 @@ export const authApi = {
       .then((res) => res.data.data)
   },
 
+  sendEmailOtp({ email, role, schoolId, customRoleId }) {
+    const body = { email, role }
+    if (schoolId) body.schoolId = schoolId
+    if (customRoleId) body.customRoleId = customRoleId
+    return httpClient
+      .post('/auth/login/email-otp/send', body)
+      .then((res) => res.data.data)
+  },
+
+  verifyEmailOtp({ email, otp, role, schoolId, customRoleId }) {
+    const body = { email, otp, role }
+    if (schoolId) body.schoolId = schoolId
+    if (customRoleId) body.customRoleId = customRoleId
+    return httpClient
+      .post('/auth/login/email-otp/verify', body)
+      .then((res) => res.data.data)
+  },
+
   logout(refreshToken) {
     return httpClient.post('/auth/logout', { refreshToken }).then((res) => res.data.data)
   },

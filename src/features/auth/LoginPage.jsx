@@ -1,9 +1,9 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useRef, useState, useCallback } from 'react'
 import { Navigate, useLocation, useNavigate } from 'react-router-dom'
-import { Eye, EyeOff, ArrowRight, Loader2, Search } from 'lucide-react'
+import { Eye, EyeOff, ArrowRight, Loader2, Search, Mail, Lock } from 'lucide-react'
 import { useAuth } from './AuthContext.jsx'
 import { authApi } from './auth.api.js'
-import { validateLoginForm } from './auth.validation.js'
+import { validateLoginForm, EMAIL_PATTERN } from './auth.validation.js'
 import { getErrorCode, getErrorMessage } from '../../api/httpClient.js'
 import { inputClass, selectClass, Field } from '../../components/ui.jsx'
 import { useDebouncedValue } from '../../hooks/useDebouncedValue.js'
@@ -189,12 +189,88 @@ function RoleSelect({ schoolId, value, onChange, error }) {
   )
 }
 
+function useResendTimer() {
+  const [countdown, setCountdown] = useState(0)
+  const intervalRef = useRef(null)
+
+  const start = useCallback((seconds) => {
+    setCountdown(seconds)
+    clearInterval(intervalRef.current)
+    intervalRef.current = setInterval(() => {
+      setCountdown((prev) => {
+        if (prev <= 1) {
+          clearInterval(intervalRef.current)
+          return 0
+        }
+        return prev - 1
+      })
+    }, 1000)
+  }, [])
+
+  useEffect(() => () => clearInterval(intervalRef.current), [])
+
+  return { countdown, start }
+}
+
+function OtpInput({ value, onChange, disabled }) {
+  const inputRefs = useRef([])
+  const raw = value.slice(0, 6)
+  const digits = Array.from({ length: 6 }, (_, i) => raw[i] || '')
+
+  const setDigit = (index, char) => {
+    const next = [...digits]
+    next[index] = char
+    onChange(next.join(''))
+  }
+
+  const handleChange = (index, e) => {
+    const char = e.target.value.replace(/\D/g, '').slice(-1)
+    setDigit(index, char)
+    if (char && index < 5) inputRefs.current[index + 1]?.focus()
+  }
+
+  const handleKeyDown = (index, e) => {
+    if (e.key === 'Backspace' && !digits[index] && index > 0) {
+      inputRefs.current[index - 1]?.focus()
+    }
+  }
+
+  const handlePaste = (e) => {
+    e.preventDefault()
+    const pasted = e.clipboardData.getData('text').replace(/\D/g, '').slice(0, 6)
+    onChange(pasted)
+    const focusIdx = Math.min(pasted.length, 5)
+    inputRefs.current[focusIdx]?.focus()
+  }
+
+  return (
+    <div className="flex gap-2 justify-center">
+      {digits.map((d, i) => (
+        <input
+          key={i}
+          ref={(el) => { inputRefs.current[i] = el }}
+          type="text"
+          inputMode="numeric"
+          maxLength={1}
+          value={d}
+          onChange={(e) => handleChange(i, e)}
+          onKeyDown={(e) => handleKeyDown(i, e)}
+          onPaste={i === 0 ? handlePaste : undefined}
+          disabled={disabled}
+          className="w-11 h-12 rounded-lg border border-line bg-surface text-center text-lg font-bold text-ink focus:border-board focus:ring-2 focus:ring-board/15 outline-none transition-shadow"
+        />
+      ))}
+    </div>
+  )
+}
+
 export default function LoginPage() {
-  const { login, user, ready } = useAuth()
+  const { login, loginWithResponse, user, ready } = useAuth()
   const navigate = useNavigate()
   const location = useLocation()
 
   const [loginType, setLoginType] = useState(readLastLoginType)
+  const [authMethod, setAuthMethod] = useState('password')
   const [identifier, setIdentifier] = useState('')
   const [password, setPassword] = useState('')
   const [showPassword, setShowPassword] = useState(false)
@@ -203,6 +279,11 @@ export default function LoginPage() {
   const [errors, setErrors] = useState({})
   const [serverError, setServerError] = useState('')
   const [submitting, setSubmitting] = useState(false)
+
+  const [otpSent, setOtpSent] = useState(false)
+  const [otpValue, setOtpValue] = useState('')
+  const [otpSending, setOtpSending] = useState(false)
+  const { countdown: resendCountdown, start: startResendTimer } = useResendTimer()
 
   const isOther = loginType === 'OTHER'
 
@@ -219,8 +300,13 @@ export default function LoginPage() {
   }
   const subtitle = loginType ? subtitleMap[loginType] : 'Sign in to continue'
 
-  const canSubmit = !!loginType && !!identifier.trim() && !!password &&
+  const canSubmitPassword = !!loginType && !!identifier.trim() && !!password &&
     (!isOther || (!!school && !!selectedRole))
+
+  const canSendOtp = !!loginType && !!identifier.trim() && EMAIL_PATTERN.test(identifier.trim()) &&
+    (!isOther || (!!school && !!selectedRole))
+
+  const canVerifyOtp = otpSent && otpValue.length === 6
 
   const handleLoginTypeChange = (e) => {
     setLoginType(e.target.value)
@@ -228,6 +314,8 @@ export default function LoginPage() {
     setSelectedRole(null)
     setServerError('')
     setErrors({})
+    setOtpSent(false)
+    setOtpValue('')
   }
 
   const handleSchoolChange = (s) => {
@@ -236,7 +324,111 @@ export default function LoginPage() {
     setErrors((prev) => ({ ...prev, school: undefined, role: undefined }))
   }
 
-  const handleSubmit = async (e) => {
+  const handleAuthMethodChange = (method) => {
+    setAuthMethod(method)
+    setServerError('')
+    setErrors({})
+    setOtpSent(false)
+    setOtpValue('')
+  }
+
+  const getApiParams = () => {
+    const apiRole = isOther ? ROLES.STAFF : loginType
+    const schoolId = isOther ? school.id : undefined
+    const customRoleId = isOther ? selectedRole.id : undefined
+    return { apiRole, schoolId, customRoleId }
+  }
+
+  const saveLoginPreferences = () => {
+    try {
+      localStorage.setItem(LAST_LOGIN_TYPE_KEY, loginType)
+      if (isOther && school) {
+        localStorage.setItem(LAST_SCHOOL_KEY, JSON.stringify({ id: school.id, name: school.name }))
+      }
+    } catch {
+      // storage unavailable
+    }
+  }
+
+  const handleSendOtp = async () => {
+    setServerError('')
+    const email = identifier.trim()
+    if (!EMAIL_PATTERN.test(email)) {
+      setErrors({ identifier: 'Enter a valid email address to receive the OTP.' })
+      return
+    }
+    if (!loginType) { setErrors({ loginType: 'Select a login type.' }); return }
+    if (isOther && !school) { setErrors({ school: 'Select your school.' }); return }
+    if (isOther && !selectedRole) { setErrors({ role: 'Select your role.' }); return }
+
+    const { apiRole, schoolId, customRoleId } = getApiParams()
+    setOtpSending(true)
+    try {
+      const data = await authApi.sendEmailOtp({ email, role: apiRole, schoolId, customRoleId })
+      setOtpSent(true)
+      setOtpValue('')
+      startResendTimer(data.resendAfterSeconds || 60)
+    } catch (err) {
+      const code = getErrorCode(err)
+      if (code === 'EMAIL_NOT_REGISTERED') {
+        setServerError('This email is not registered. Check the login type and school you selected.')
+      } else if (code === 'ACCOUNT_INACTIVE') {
+        setServerError(getErrorMessage(err, 'Your account is inactive. Contact your admin.'))
+      } else if (code === 'OTP_RESEND_COOLDOWN') {
+        const retryAfter = err.response?.data?.error?.details?.retryAfterSeconds
+        if (retryAfter) startResendTimer(retryAfter)
+        setServerError(getErrorMessage(err, 'Please wait before requesting another OTP.'))
+      } else if (code === 'OTP_LIMIT_REACHED') {
+        setServerError(getErrorMessage(err, 'Too many OTP requests. Please try again later.'))
+      } else if (code === 'OTP_SEND_FAILED') {
+        setServerError('Could not send OTP right now. Please try again.')
+      } else {
+        setServerError(getErrorMessage(err, 'Could not send OTP. Please try again.'))
+      }
+    } finally {
+      setOtpSending(false)
+    }
+  }
+
+  const handleVerifyOtp = async (e) => {
+    e.preventDefault()
+    setServerError('')
+    if (otpValue.length !== 6) return
+
+    const email = identifier.trim()
+    const { apiRole, schoolId, customRoleId } = getApiParams()
+    setSubmitting(true)
+    try {
+      const data = await authApi.verifyEmailOtp({ email, otp: otpValue, role: apiRole, schoolId, customRoleId })
+      loginWithResponse(data)
+      saveLoginPreferences()
+      navigate(location.state?.from || '/', { replace: true })
+    } catch (err) {
+      const code = getErrorCode(err)
+      if (code === 'INVALID_OTP') {
+        const attemptsLeft = err.response?.data?.error?.details?.attemptsLeft
+        setServerError(
+          attemptsLeft != null
+            ? `Incorrect OTP. ${attemptsLeft} attempt${attemptsLeft !== 1 ? 's' : ''} left.`
+            : 'Incorrect OTP. Please try again.'
+        )
+      } else if (code === 'OTP_EXPIRED') {
+        setServerError('OTP has expired. Please request a new one.')
+        setOtpSent(false)
+        setOtpValue('')
+      } else if (code === 'OTP_ATTEMPTS_EXCEEDED') {
+        setServerError('Too many incorrect attempts. Please request a new OTP.')
+        setOtpSent(false)
+        setOtpValue('')
+      } else {
+        setServerError(getErrorMessage(err, 'Could not verify OTP. Please try again.'))
+      }
+    } finally {
+      setSubmitting(false)
+    }
+  }
+
+  const handlePasswordSubmit = async (e) => {
     e.preventDefault()
     setServerError('')
 
@@ -247,21 +439,12 @@ export default function LoginPage() {
     setErrors(validationErrors)
     if (Object.keys(validationErrors).length > 0) return
 
-    const apiRole = isOther ? ROLES.STAFF : loginType
-    const schoolId = isOther ? school.id : undefined
-    const customRoleId = isOther ? selectedRole.id : undefined
+    const { apiRole, schoolId, customRoleId } = getApiParams()
 
     setSubmitting(true)
     try {
       await login(identifier.trim(), password, apiRole, schoolId, customRoleId)
-      try {
-        localStorage.setItem(LAST_LOGIN_TYPE_KEY, loginType)
-        if (isOther && school) {
-          localStorage.setItem(LAST_SCHOOL_KEY, JSON.stringify({ id: school.id, name: school.name }))
-        }
-      } catch {
-        // storage unavailable
-      }
+      saveLoginPreferences()
       navigate(location.state?.from || '/', { replace: true })
     } catch (err) {
       const code = getErrorCode(err)
@@ -278,6 +461,16 @@ export default function LoginPage() {
       }
     } finally {
       setSubmitting(false)
+    }
+  }
+
+  const handleSubmit = (e) => {
+    if (authMethod === 'otp') {
+      if (otpSent) return handleVerifyOtp(e)
+      e.preventDefault()
+      handleSendOtp()
+    } else {
+      handlePasswordSubmit(e)
     }
   }
 
@@ -363,47 +556,109 @@ export default function LoginPage() {
               </>
             )}
 
-            <Field label="Email, username or mobile number" required error={errors.identifier}>
+            <Field label="Email" required error={errors.identifier}>
               <input
-                type="text"
+                type="email"
                 value={identifier}
-                onChange={(e) => setIdentifier(e.target.value)}
-                placeholder="Enter email, username or mobile"
+                onChange={(e) => { setIdentifier(e.target.value); setOtpSent(false); setOtpValue('') }}
+                placeholder="Enter your email"
                 className={inputClass}
                 autoComplete="username"
               />
             </Field>
 
-            <Field label="Password" required error={errors.password}>
-              <div className="relative">
-                <input
-                  type={showPassword ? 'text' : 'password'}
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  placeholder="••••••••"
-                  className={`${inputClass} pr-10`}
-                  autoComplete="current-password"
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowPassword((s) => !s)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-ink/40 hover:text-ink/70"
-                  aria-label={showPassword ? 'Hide password' : 'Show password'}
-                >
-                  {showPassword ? <EyeOff size={17} /> : <Eye size={17} />}
-                </button>
-              </div>
-            </Field>
-
-            <div className="flex justify-end -mt-1">
+            <div className="flex gap-1 p-1 bg-line/30 rounded-xl">
               <button
                 type="button"
-                onClick={() => navigate('/forgot-password')}
-                className="text-xs font-semibold text-board hover:text-board-light underline decoration-dotted underline-offset-4"
+                onClick={() => handleAuthMethodChange('password')}
+                className={`flex-1 flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg text-sm font-semibold transition-colors ${
+                  authMethod === 'password'
+                    ? 'bg-board text-on-board shadow-sm'
+                    : 'text-ink/60 hover:text-ink hover:bg-line/40'
+                }`}
               >
-                Forgot password?
+                <Lock size={14} />
+                Password
+              </button>
+              <button
+                type="button"
+                onClick={() => handleAuthMethodChange('otp')}
+                className={`flex-1 flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg text-sm font-semibold transition-colors ${
+                  authMethod === 'otp'
+                    ? 'bg-board text-on-board shadow-sm'
+                    : 'text-ink/60 hover:text-ink hover:bg-line/40'
+                }`}
+              >
+                <Mail size={14} />
+                Email OTP
               </button>
             </div>
+
+            {authMethod === 'password' && (
+              <>
+                <Field label="Password" required error={errors.password}>
+                  <div className="relative">
+                    <input
+                      type={showPassword ? 'text' : 'password'}
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      placeholder="Enter your password"
+                      className={`${inputClass} pr-10`}
+                      autoComplete="current-password"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword((s) => !s)}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-ink/40 hover:text-ink/70"
+                      aria-label={showPassword ? 'Hide password' : 'Show password'}
+                    >
+                      {showPassword ? <EyeOff size={17} /> : <Eye size={17} />}
+                    </button>
+                  </div>
+                </Field>
+
+                <div className="flex justify-end -mt-1">
+                  <button
+                    type="button"
+                    onClick={() => navigate('/forgot-password')}
+                    className="text-xs font-semibold text-board hover:text-board-light underline decoration-dotted underline-offset-4"
+                  >
+                    Forgot password?
+                  </button>
+                </div>
+              </>
+            )}
+
+            {authMethod === 'otp' && !otpSent && (
+              <p className="text-xs text-ink/50 text-center">
+                We'll send a 6-digit verification code to your email.
+              </p>
+            )}
+
+            {authMethod === 'otp' && otpSent && (
+              <div className="space-y-3">
+                <p className="text-sm text-ink/70 text-center">
+                  Enter the 6-digit code sent to <span className="font-semibold text-ink">{identifier.trim()}</span>
+                </p>
+                <OtpInput value={otpValue} onChange={setOtpValue} disabled={submitting} />
+                <div className="text-center">
+                  {resendCountdown > 0 ? (
+                    <p className="text-xs text-ink/45">
+                      Resend in <span className="font-semibold tabular-nums">{resendCountdown}s</span>
+                    </p>
+                  ) : (
+                    <button
+                      type="button"
+                      onClick={handleSendOtp}
+                      disabled={otpSending}
+                      className="text-xs font-semibold text-board hover:text-board-light underline decoration-dotted underline-offset-4 disabled:opacity-50"
+                    >
+                      {otpSending ? 'Sending...' : 'Resend OTP'}
+                    </button>
+                  )}
+                </div>
+              </div>
+            )}
 
             {serverError && (
               <p className="text-sm text-coral font-medium bg-coral/8 border border-coral/20 rounded-lg px-3 py-2">
@@ -411,20 +666,57 @@ export default function LoginPage() {
               </p>
             )}
 
-            <button
-              type="submit"
-              disabled={!canSubmit || submitting}
-              className="w-full flex items-center justify-center gap-2 bg-board hover:bg-board-light disabled:opacity-60 text-paper font-semibold text-sm rounded-lg py-3 transition-colors"
-            >
-              {submitting ? (
-                <Loader2 size={16} className="animate-spin" />
-              ) : (
-                <>
-                  Sign in
-                  <ArrowRight size={16} />
-                </>
-              )}
-            </button>
+            {authMethod === 'password' && (
+              <button
+                type="submit"
+                disabled={!canSubmitPassword || submitting}
+                className="w-full flex items-center justify-center gap-2 bg-board hover:bg-board-light disabled:opacity-60 text-paper font-semibold text-sm rounded-lg py-3 transition-colors"
+              >
+                {submitting ? (
+                  <Loader2 size={16} className="animate-spin" />
+                ) : (
+                  <>
+                    Sign in
+                    <ArrowRight size={16} />
+                  </>
+                )}
+              </button>
+            )}
+
+            {authMethod === 'otp' && !otpSent && (
+              <button
+                type="button"
+                onClick={handleSendOtp}
+                disabled={!canSendOtp || otpSending}
+                className="w-full flex items-center justify-center gap-2 bg-board hover:bg-board-light disabled:opacity-60 text-paper font-semibold text-sm rounded-lg py-3 transition-colors"
+              >
+                {otpSending ? (
+                  <Loader2 size={16} className="animate-spin" />
+                ) : (
+                  <>
+                    Send OTP
+                    <ArrowRight size={16} />
+                  </>
+                )}
+              </button>
+            )}
+
+            {authMethod === 'otp' && otpSent && (
+              <button
+                type="submit"
+                disabled={!canVerifyOtp || submitting}
+                className="w-full flex items-center justify-center gap-2 bg-board hover:bg-board-light disabled:opacity-60 text-paper font-semibold text-sm rounded-lg py-3 transition-colors"
+              >
+                {submitting ? (
+                  <Loader2 size={16} className="animate-spin" />
+                ) : (
+                  <>
+                    Verify & Sign in
+                    <ArrowRight size={16} />
+                  </>
+                )}
+              </button>
+            )}
           </form>
 
           <p className="text-center text-sm text-ink/50 mt-5">

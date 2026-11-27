@@ -170,6 +170,7 @@ export const ROLE_PERMISSIONS = [
     group: 'Fees',
     items: [
       { key: 'feesView', label: 'View student fees', type: 'boolean', default: false },
+      { key: 'feesManage', label: 'Manage fees', type: 'boolean', default: false },
       { key: 'feesCollect', label: 'Collect fees', type: 'boolean', default: false },
       { key: 'receiptPrint', label: 'Print receipts', type: 'boolean', default: false },
       { key: 'maxDiscountPercent', label: 'Max discount (%)', type: 'number', default: 0, min: 0, max: 100 },
@@ -180,6 +181,7 @@ export const ROLE_PERMISSIONS = [
     group: 'Salary',
     items: [
       { key: 'salaryView', label: 'View staff salary', type: 'boolean', default: false },
+      { key: 'salaryManage', label: 'Manage salary', type: 'boolean', default: false },
       { key: 'salaryGenerate', label: 'Generate monthly salary', type: 'boolean', default: false },
     ],
   },

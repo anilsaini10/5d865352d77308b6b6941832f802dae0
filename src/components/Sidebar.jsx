@@ -30,11 +30,16 @@ export default function Sidebar({ open, onClose }) {
   const { notify } = useToast()
   const { pathname } = useLocation()
   const role = user?.role ?? ROLES.SUPER_ADMIN
-  const allGroups = NAV_BY_ROLE[role] ?? []
-  const navGroups = allGroups.filter((g) => g.items.length > 0)
   const roleLabel = ROLE_LABELS[role]
   const isAdmin = role === ROLES.ADMIN
   const isStaff = role === ROLES.STAFF
+  const allGroups = NAV_BY_ROLE[role] ?? []
+  // Staff: only show items + sections the user actually has permission for
+  const navGroups = isStaff
+    ? allGroups
+        .map((g) => ({ ...g, items: g.items.filter((item) => !item.permission || can(item.permission)) }))
+        .filter((g) => g.items.length > 0)
+    : allGroups.filter((g) => g.items.length > 0)
   const badges = {
     supportOpen: useSupportOpenCount(role === ROLES.SUPER_ADMIN),
     recoveryPending: useRecoveryPendingCount(role === ROLES.ADMIN),
@@ -74,6 +79,8 @@ export default function Sidebar({ open, onClose }) {
   const renderNavItem = ({ to, label, icon: Icon, end, badge, alsoActive, feature, permission }, indented) => {
     const denied = permission && !can(permission)
     if (denied) {
+      // Staff: hide items without permission entirely (sections are pre-filtered)
+      if (isStaff) return null
       return (
         <button
           key={to}

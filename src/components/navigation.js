@@ -149,6 +149,49 @@ export const NAV_BY_ROLE = {
       ],
     },
     {
+      title: 'Academics',
+      icon: BookOpen,
+      items: [
+        { to: '/classes', label: 'Classes', icon: Layers, permission: P.CLASSES_VIEW },
+        { to: '/subjects', label: 'Subjects', icon: BookOpen, permission: P.SUBJECTS_VIEW },
+        { to: '/timetable', label: 'Timetable', icon: CalendarClock, permission: P.TIMETABLE_VIEW },
+        { to: '/exams', label: 'Exams', icon: ClipboardList, permission: P.EXAMS_VIEW },
+        { to: '/academic-calendar', label: 'Academic Calendar', icon: CalendarRange, permission: P.CALENDAR_VIEW },
+      ],
+    },
+    {
+      title: 'People',
+      icon: Users,
+      items: [
+        { to: '/students', label: 'Students', icon: GraduationCap, alsoActive: ['/attendance'], permission: P.STUDENTS_VIEW },
+        { to: '/teachers', label: 'Teachers', icon: UserSquare2, permission: P.TEACHERS_VIEW },
+      ],
+    },
+    {
+      title: 'Communication',
+      icon: Megaphone,
+      items: [
+        { to: '/announcements', label: 'Announcements', icon: Megaphone, permission: P.ANNOUNCEMENTS_VIEW },
+        { to: '/events', label: 'Events', icon: CalendarDays, permission: P.EVENTS_VIEW },
+        { to: '/notifications', label: 'Notifications', icon: Bell, permission: P.NOTIFICATIONS_VIEW },
+      ],
+    },
+    {
+      title: 'Requests',
+      icon: Inbox,
+      items: [
+        { to: '/leave', label: 'Leave requests', icon: CalendarOff, permission: P.LEAVE_VIEW },
+      ],
+    },
+    {
+      title: 'Finance',
+      icon: Wallet,
+      items: [
+        { to: '/salary', label: 'Salary', icon: Wallet, permission: P.SALARY_VIEW },
+        { to: '/fees', label: 'Fees', icon: IndianRupee, permission: P.FEES_VIEW },
+      ],
+    },
+    {
       title: 'Settings',
       icon: Settings,
       items: [

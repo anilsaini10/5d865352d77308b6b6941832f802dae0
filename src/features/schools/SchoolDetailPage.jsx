@@ -16,9 +16,11 @@ import AdminsTable from '../admins/components/AdminsTable.jsx'
 import AdminCreatedBanner from '../admins/components/AdminCreatedBanner.jsx'
 import SchoolPermissionsTab from './components/SchoolPermissionsTab.jsx'
 import SchoolRolePermissionsTab from './components/SchoolRolePermissionsTab.jsx'
+import SchoolUsersTab from './users/SchoolUsersTab.jsx'
 
 const TABS = [
   { value: 'details', label: 'Details' },
+  { value: 'users', label: 'Users' },
   { value: 'permissions', label: 'Permissions' },
   { value: 'rolePermissions', label: 'Role permissions' },
 ]
@@ -253,6 +255,7 @@ export default function SchoolDetailPage() {
         </>
       )}
 
+      {tab === 'users' && <SchoolUsersTab schoolId={schoolId} />}
       {tab === 'permissions' && <SchoolPermissionsTab schoolId={schoolId} />}
       {tab === 'rolePermissions' && <SchoolRolePermissionsTab schoolId={schoolId} />}
     </AppShell>

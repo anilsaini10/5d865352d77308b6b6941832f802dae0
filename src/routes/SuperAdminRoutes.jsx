@@ -13,6 +13,7 @@ import SubscriptionsPage from '../features/subscription/subscriptions/Subscripti
 import RolesPage from '../features/roles/RolesPage.jsx'
 import SuperAdminRolePermissionsPage from '../features/schools/SuperAdminRolePermissionsPage.jsx'
 import CrashReportsPage from '../features/crashReports/CrashReportsPage.jsx'
+import SchoolUsersPage from '../features/schools/users/SchoolUsersPage.jsx'
 
 export default function SuperAdminRoutes() {
   return (
@@ -21,6 +22,7 @@ export default function SuperAdminRoutes() {
       <Route path="/schools" element={<SchoolsListPage />} />
       <Route path="/schools/new" element={<CreateSchoolPage />} />
       <Route path="/schools/:schoolId" element={<SchoolDetailPage />} />
+      <Route path="/schools/:schoolId/users" element={<SchoolUsersPage />} />
       <Route path="/admins" element={<AdminsListPage />} />
       <Route path="/roles" element={<RolesPage />} />
       <Route path="/role-permissions" element={<SuperAdminRolePermissionsPage />} />

@@ -65,6 +65,7 @@ export const P = {
   // Fees
   FEES_MODULE: 'feesModule',
   FEES_VIEW: 'feesView',
+  FEES_MANAGE: 'feesManage',
   FEES_COLLECT: 'feesCollect',
   RECEIPT_PRINT: 'receiptPrint',
   MAX_DISCOUNT_PERCENT: 'maxDiscountPercent',
@@ -72,6 +73,7 @@ export const P = {
 
   // Salary
   SALARY_VIEW: 'salaryView',
+  SALARY_MANAGE: 'salaryManage',
   SALARY_GENERATE: 'salaryGenerate',
 
   // Settings
